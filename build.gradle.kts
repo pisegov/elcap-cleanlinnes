@@ -3,6 +3,7 @@ plugins {
     application
 }
 
+
 group = "club.elcapitan"
 version = "1.0-SNAPSHOT"
 
@@ -11,6 +12,9 @@ repositories {
 }
 
 dependencies {
+    val tgBotApiVersion by System.getProperties()
+    implementation("dev.inmo:tgbotapi:$tgBotApiVersion")
+
     testImplementation(kotlin("test"))
 }
 
