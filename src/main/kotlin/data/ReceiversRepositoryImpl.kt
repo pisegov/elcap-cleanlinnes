@@ -3,8 +3,9 @@ package data
 import data.local.ReceiversDataSource
 import domain.ReceiversRepository
 import domain.model.Receiver
+import javax.inject.Inject
 
-class ReceiversRepositoryImpl(private val dataSource: ReceiversDataSource) : ReceiversRepository {
+class ReceiversRepositoryImpl @Inject constructor(private val dataSource: ReceiversDataSource) : ReceiversRepository {
 
     override fun addReceiver(telegramChatId: Long) {
         dataSource.addReceiver(telegramChatId)

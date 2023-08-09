@@ -3,8 +3,9 @@ package data
 import data.local.ChatsDataSource
 import domain.ChatsRepository
 import domain.model.Chat
+import javax.inject.Inject
 
-class ChatsRepositoryImpl(private val dataSource: ChatsDataSource) : ChatsRepository {
+class ChatsRepositoryImpl @Inject constructor(private val dataSource: ChatsDataSource) : ChatsRepository {
     override fun addChat(chat: Chat) {
         dataSource.addChat(chat)
     }

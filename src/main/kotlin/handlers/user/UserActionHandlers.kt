@@ -6,14 +6,16 @@ import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
 import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.*
 import dev.inmo.tgbotapi.types.chat.PrivateChat
 import handlers.ActionHandlers
-import receiversRepository
+import javax.inject.Inject
 
-class UserActionHandlers(private val behaviourContext: BehaviourContext) : ActionHandlers {
-    private val userActionsController = UserAcitionsController(behaviourContext, receiversRepository)
+class UserActionHandlers @Inject constructor(
+    private val behaviourContext: BehaviourContext,
+    private val actionsController: UserActionsController,
+) : ActionHandlers {
     override suspend fun setupHandlers() {
         behaviourContext.apply {
             onPhoto { message ->
-                userActionsController.handleCallWithPhoto(message)
+                actionsController.handleCallWithPhoto(message)
             }
             onCommand("start", initialFilter = { it.chat is PrivateChat }) {
                 send(it.chat, "Start message")

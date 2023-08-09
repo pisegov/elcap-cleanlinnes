@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "1.9.0"
+    kotlin("kapt") version "1.9.0"
     application
 }
 
@@ -15,6 +16,9 @@ dependencies {
     val tgBotApiVersion by System.getProperties()
     implementation("dev.inmo:tgbotapi:$tgBotApiVersion")
 
+    implementation("com.google.dagger:dagger:2.47")
+    kapt("com.google.dagger:dagger-compiler:2.47")
+
     testImplementation(kotlin("test"))
 }
 
@@ -23,7 +27,7 @@ tasks.test {
 }
 
 kotlin {
-    jvmToolchain(8)
+    jvmToolchain(11)
 }
 
 application {

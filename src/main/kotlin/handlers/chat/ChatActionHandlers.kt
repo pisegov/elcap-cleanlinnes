@@ -3,20 +3,22 @@ package handlers.chat
 import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
 import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onLeftChatMember
 import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onNewChatMembers
-import domain.ChatsRepository
 import handlers.ActionHandlers
+import javax.inject.Inject
 
-class ChatActionHandlers(private val behaviourContext: BehaviourContext, chatsRepository: ChatsRepository) :
+class ChatActionHandlers @Inject constructor(
+    private val behaviourContext: BehaviourContext,
+    private val actionsController: ChatActionsController,
+) :
     ActionHandlers {
-    private val chatActionsController = ChatActionsController(chatsRepository)
     override suspend fun setupHandlers() {
-        behaviourContext.apply {
+        with(behaviourContext) {
             onNewChatMembers { message ->
-                chatActionsController.handleAddingToChat(message)
+                actionsController.handleAddingToChat(message)
             }
 
             onLeftChatMember { message ->
-                chatActionsController.handleRemovingFromChat(message)
+                actionsController.handleRemovingFromChat(message)
             }
         }
     }

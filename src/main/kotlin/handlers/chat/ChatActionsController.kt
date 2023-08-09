@@ -6,8 +6,9 @@ import dev.inmo.tgbotapi.types.message.ChatEvents.NewChatMembers
 import dev.inmo.tgbotapi.types.message.abstracts.ChatEventMessage
 import domain.ChatsRepository
 import domain.model.Chat
+import javax.inject.Inject
 
-class ChatActionsController(private val chatsRepository: ChatsRepository) {
+class ChatActionsController @Inject constructor(private val chatsRepository: ChatsRepository) {
     fun handleAddingToChat(receivedMessage: ChatEventMessage<NewChatMembers>) {
         println(receivedMessage.chatEvent)
         println(receivedMessage.chat)

@@ -10,8 +10,9 @@ import dev.inmo.tgbotapi.types.message.abstracts.PossiblyForwardedMessage
 import dev.inmo.tgbotapi.types.message.content.PhotoContent
 import dev.inmo.tgbotapi.utils.extensions.threadIdOrNull
 import domain.ReceiversRepository
+import javax.inject.Inject
 
-class UserAcitionsController(
+class UserActionsController @Inject constructor(
     private val behaviourContext: BehaviourContext,
     private val receiversRepository: ReceiversRepository,
 ) {

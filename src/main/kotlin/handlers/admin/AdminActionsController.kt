@@ -20,8 +20,9 @@ import dev.inmo.tgbotapi.types.request.UserShared
 import dev.inmo.tgbotapi.utils.RiskFeature
 import dev.inmo.tgbotapi.utils.row
 import domain.ReceiversRepository
+import javax.inject.Inject
 
-class AdminActionsController(
+class AdminActionsController @Inject constructor(
     private val behaviourContext: BehaviourContext,
     private val receiversRepository: ReceiversRepository,
 ) {

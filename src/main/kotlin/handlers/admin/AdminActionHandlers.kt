@@ -6,28 +6,28 @@ import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onComman
 import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onUserShared
 import dev.inmo.tgbotapi.types.chat.PrivateChat
 import handlers.ActionHandlers
-import receiversRepository
+import javax.inject.Inject
 
-class AdminActionHandlers(private val behaviourContext: BehaviourContext) : ActionHandlers {
-
-    private val adminActionsController = AdminActionsController(behaviourContext, receiversRepository)
-
+class AdminActionHandlers @Inject constructor(
+    private val behaviourContext: BehaviourContext,
+    private val actionsController: AdminActionsController,
+) : ActionHandlers {
     override suspend fun setupHandlers() {
-        behaviourContext.apply {
+        with(behaviourContext) {
             onCommand("show_receivers", initialFilter = { it.chat is PrivateChat }) { message ->
-                adminActionsController.showReceivers(message)
+                actionsController.showReceivers(message)
             }
 
             onCommand("add_receiver", initialFilter = { it.chat is PrivateChat }) { message ->
-                adminActionsController.addReceiver(message)
+                actionsController.addReceiver(message)
             }
 
             onUserShared { message ->
-                adminActionsController.handleSharedUser(message)
+                actionsController.handleSharedUser(message)
             }
 
             onChatShared { message ->
-                adminActionsController.handleSharedChat(message)
+                actionsController.handleSharedChat(message)
             }
         }
     }
