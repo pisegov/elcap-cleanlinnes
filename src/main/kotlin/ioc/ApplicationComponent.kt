@@ -11,8 +11,8 @@ import data.local.ChatsDataSource
 import data.local.ReceiversDataSource
 import data.local.UsersDataSource
 import data.local.db.LocalChatsDataSource
+import data.local.db.LocalUsersDataSource
 import data.local.in_memory.InMemoryReceiversDataSource
-import data.local.in_memory.InMemoryUsersDataSource
 import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
 import domain.ChatsRepository
 import domain.ReceiversRepository
@@ -47,7 +47,7 @@ interface ApplicationModule {
     fun chatsDataSource(impl: LocalChatsDataSource): ChatsDataSource
 
     @Binds
-    fun usersDataSource(impl: InMemoryUsersDataSource): UsersDataSource
+    fun usersDataSource(impl: LocalUsersDataSource): UsersDataSource
 
     @Binds
     fun receiversDataSource(impl: InMemoryReceiversDataSource): ReceiversDataSource

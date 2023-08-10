@@ -2,6 +2,7 @@ import constants.BOT_TOKEN
 import constants.mysql_password
 import constants.mysql_user
 import data.local.db.ChatsTable
+import data.local.db.UsersTable
 import dev.inmo.tgbotapi.bot.ktor.telegramBot
 import dev.inmo.tgbotapi.extensions.api.bot.getMe
 import dev.inmo.tgbotapi.extensions.api.bot.setMyCommands
@@ -27,6 +28,7 @@ suspend fun main() {
 
         transaction {
             SchemaUtils.create(ChatsTable)
+            SchemaUtils.create(UsersTable)
         }
 
         val applicationComponent = DaggerApplicationComponent.factory().create(this)

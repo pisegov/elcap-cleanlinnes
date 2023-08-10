@@ -6,5 +6,5 @@ interface UsersDataSource {
     fun addUser(newUser: User)
     fun removeUser(telegramChatId: Long)
 
-    fun getUsers(): Map<Long, User>
+    fun getUsers(): List<User>
 }
