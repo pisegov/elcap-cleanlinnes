@@ -1,16 +1,33 @@
+import constants.BOT_TOKEN
+import constants.mysql_password
+import constants.mysql_user
+import data.local.db.ChatsTable
 import dev.inmo.tgbotapi.bot.ktor.telegramBot
 import dev.inmo.tgbotapi.extensions.api.bot.getMe
 import dev.inmo.tgbotapi.extensions.api.bot.setMyCommands
 import dev.inmo.tgbotapi.extensions.behaviour_builder.buildBehaviourWithLongPolling
 import dev.inmo.tgbotapi.types.BotCommand
 import ioc.DaggerApplicationComponent
-import util.BOT_TOKEN
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.transactions.transaction
 
 suspend fun main() {
     val bot = telegramBot(BOT_TOKEN)
 
     bot.buildBehaviourWithLongPolling {
         println(getMe())
+
+        Database.connect(
+            url = "jdbc:mysql://localhost:3306/cleanliness_bot?useSSL=false&allowPublicKeyRetrieval=true",
+            driver = "com.mysql.cj.jdbc.Driver",
+            user = mysql_user,
+            password = mysql_password
+        )
+
+        transaction {
+            SchemaUtils.create(ChatsTable)
+        }
 
         val applicationComponent = DaggerApplicationComponent.factory().create(this)
         applicationComponent.apply {

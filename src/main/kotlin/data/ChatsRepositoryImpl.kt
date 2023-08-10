@@ -15,7 +15,7 @@ class ChatsRepositoryImpl @Inject constructor(private val dataSource: ChatsDataS
     }
 
     override fun getChats(): List<Chat> {
-        return dataSource.getChats().map { it.value }
+        return dataSource.getChats()
     }
 
 }
