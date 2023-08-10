@@ -7,8 +7,8 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 object ChatsTable : Table("chats") {
     private val id = integer("chat_id").autoIncrement()
-    val telegramChatId = long("telegram_chat_id")
-    private val title = varchar("title", 100)
+    val telegramChatId = long("telegram_chat_id").references(ReceiversTable.telegramChatId).uniqueIndex()
+    val title = varchar("title", 100)
     override val primaryKey = PrimaryKey(id, name = "chat_id")
 
     private val table = this

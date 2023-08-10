@@ -10,9 +10,9 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 object UsersTable : Table("bot_users") {
     private val id = integer("user_id").autoIncrement()
-    val telegramChatId = long("telegram_chat_id")
-    private val name = varchar("name", 100)
-    private val username = varchar("telegram_username", 100)
+    val telegramChatId = long("telegram_chat_id").references(ReceiversTable.telegramChatId).uniqueIndex()
+    val name = varchar("name", 100)
+    val username = varchar("telegram_username", 100)
     override val primaryKey = PrimaryKey(id, name = "user_id")
 
     private val table = this
