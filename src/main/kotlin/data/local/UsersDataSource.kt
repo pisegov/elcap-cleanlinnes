@@ -3,8 +3,8 @@ package data.local
 import domain.model.User
 
 interface UsersDataSource {
-    fun addUser(newUser: User)
-    fun removeUser(telegramChatId: Long)
+    suspend fun addUser(newUser: User)
+    suspend fun removeUser(telegramChatId: Long)
 
-    fun getUsers(): List<User>
+    suspend fun getUsers(): List<User>
 }

@@ -3,19 +3,21 @@ package data
 import data.local.ReceiversDataSource
 import domain.ReceiversRepository
 import domain.model.Receiver
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class ReceiversRepositoryImpl @Inject constructor(private val dataSource: ReceiversDataSource) : ReceiversRepository {
 
-    override fun addReceiver(telegramChatId: Long) {
+    override suspend fun addReceiver(telegramChatId: Long) {
         dataSource.addReceiver(telegramChatId)
     }
 
-    override fun removeReceiver(telegramChatId: Long) {
+    override suspend fun removeReceiver(telegramChatId: Long) = withContext(Dispatchers.IO) {
         dataSource.removeReceiver(telegramChatId)
     }
 
-    override fun getReceiversList(): List<Receiver> {
-        return dataSource.getReceiversList()
+    override suspend fun getReceiversList(): List<Receiver> = withContext(Dispatchers.IO) {
+        return@withContext dataSource.getReceiversList()
     }
 }

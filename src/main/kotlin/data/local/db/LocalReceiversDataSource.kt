@@ -5,15 +5,15 @@ import domain.model.Receiver
 import javax.inject.Inject
 
 class LocalReceiversDataSource @Inject constructor() : ReceiversDataSource {
-    override fun addReceiver(telegramChatId: Long) {
+    override suspend fun addReceiver(telegramChatId: Long) {
         ReceiversTable.insert(telegramChatId)
     }
 
-    override fun removeReceiver(telegramChatId: Long) {
+    override suspend fun removeReceiver(telegramChatId: Long) {
         ReceiversTable.removeReceiver(telegramChatId)
     }
 
-    override fun getReceiversList(): List<Receiver> {
+    override suspend fun getReceiversList(): List<Receiver> {
         return ReceiversTable.getAllReceivers()
     }
 }

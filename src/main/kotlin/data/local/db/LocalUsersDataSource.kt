@@ -5,15 +5,15 @@ import domain.model.User
 import javax.inject.Inject
 
 class LocalUsersDataSource @Inject constructor() : UsersDataSource {
-    override fun addUser(newUser: User) {
+    override suspend fun addUser(newUser: User) {
         UsersTable.insert(newUser)
     }
 
-    override fun removeUser(telegramChatId: Long) {
+    override suspend fun removeUser(telegramChatId: Long) {
         UsersTable.removeUser(telegramChatId)
     }
 
-    override fun getUsers(): List<User> {
+    override suspend fun getUsers(): List<User> {
         return UsersTable.getAllUsers().map { it.toUser() }
     }
 }

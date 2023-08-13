@@ -3,7 +3,7 @@ package domain
 import domain.model.Chat
 
 interface ChatsRepository {
-    fun addChat(chat: Chat)
-    fun removeChat(telegramChatId: Long)
-    fun getChats(): List<Chat>
+    suspend fun addChat(chat: Chat)
+    suspend fun removeChat(telegramChatId: Long)
+    suspend fun getChats(): List<Chat>
 }

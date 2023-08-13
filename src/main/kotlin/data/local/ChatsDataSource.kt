@@ -3,8 +3,8 @@ package data.local
 import domain.model.Chat
 
 interface ChatsDataSource {
-    fun addChat(chat: Chat)
-    fun removeChat(telegramChatId: Long)
+    suspend fun addChat(chat: Chat)
+    suspend fun removeChat(telegramChatId: Long)
 
-    fun getChats(): List<Chat>
+    suspend fun getChats(): List<Chat>
 }

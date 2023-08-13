@@ -6,15 +6,15 @@ import javax.inject.Inject
 
 class LocalChatsDataSource @Inject constructor() : ChatsDataSource {
 
-    override fun addChat(chat: Chat) {
+    override suspend fun addChat(chat: Chat) {
         ChatsTable.insert(chat)
     }
 
-    override fun removeChat(telegramChatId: Long) {
+    override suspend fun removeChat(telegramChatId: Long) {
         ChatsTable.removeChat(telegramChatId)
     }
 
-    override fun getChats(): List<Chat> {
+    override suspend fun getChats(): List<Chat> {
         val dtoList: List<ChatDTO> = ChatsTable.getAllChats()
         return dtoList.map { it.toChat() }
     }
