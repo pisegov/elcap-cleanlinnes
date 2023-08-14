@@ -8,12 +8,20 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
 object ReceiversTable : Table("receivers") {
-    val telegramChatId = long("telegram_chat_id").uniqueIndex()
+    val id = integer("id").autoIncrement()
+    val telegramChatId = long("telegram_chat_id")
+
+    override val primaryKey: PrimaryKey
+        get() = PrimaryKey(id, name = "receiver_id")
 
     private val table = this
 
+    init {
+        uniqueIndex(telegramChatId)
+    }
+
     fun insert(chatId: Long) {
-        return transaction {
+        transaction {
             insert {
                 it[telegramChatId] = chatId
             }

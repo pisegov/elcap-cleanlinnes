@@ -1,9 +1,12 @@
 package data.local.db
 
 import domain.model.Chat
-import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.upsert
 
 object ChatsTable : Table("chats") {
     private val id = integer("chat_id").autoIncrement()
@@ -13,14 +16,16 @@ object ChatsTable : Table("chats") {
 
     private val table = this
 
+    init {
+        uniqueIndex(telegramChatId)
+    }
+
     fun insert(chat: Chat) {
         return transaction {
-            val model = insert {
+            upsert {
                 it[title] = chat.title
                 it[telegramChatId] = chat.telegramChatId
             }
-
-            model[table.id]
         }
     }
 
