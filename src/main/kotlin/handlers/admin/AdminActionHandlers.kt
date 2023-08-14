@@ -23,7 +23,7 @@ class AdminActionHandlers @Inject constructor(
             }
 
             onUserShared { message ->
-                actionsController.handleSharedUser(message)
+                actionsController.handleSharedChat(message)
             }
 
             onChatShared { message ->
