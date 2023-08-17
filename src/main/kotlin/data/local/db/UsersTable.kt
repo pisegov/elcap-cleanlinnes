@@ -10,9 +10,9 @@ import org.jetbrains.exposed.sql.upsert
 
 object UsersTable : Table("bot_users") {
     private val id = integer("user_id").autoIncrement()
-    val telegramChatId = long("telegram_chat_id").references(ReceiversTable.telegramChatId)
+    val telegramChatId = long("telegram_chat_id")
     val name = varchar("name", 100)
-    val username = varchar("telegram_username", 100)
+    val username = varchar("telegram_username", 100).nullable()
     override val primaryKey = PrimaryKey(id, name = "user_id")
 
     private val table = this
@@ -24,7 +24,7 @@ object UsersTable : Table("bot_users") {
     fun insert(user: User) {
         return transaction {
             upsert {
-                it[name] = user.title
+                it[name] = user.name
                 it[username] = user.username
                 it[telegramChatId] = user.telegramChatId
             }

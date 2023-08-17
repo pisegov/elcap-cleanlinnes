@@ -6,7 +6,11 @@ import javax.inject.Inject
 
 class LocalUsersDataSource @Inject constructor() : UsersDataSource {
     override suspend fun addUser(newUser: User) {
-        UsersTable.insert(newUser)
+        try {
+            UsersTable.insert(newUser)
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
     }
 
     override suspend fun removeUser(telegramChatId: Long) {

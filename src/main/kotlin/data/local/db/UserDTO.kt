@@ -4,5 +4,5 @@ data class UserDTO(
     val id: Int,
     val telegramChatId: Long,
     val name: String,
-    val username: String,
+    val username: String?,
 )

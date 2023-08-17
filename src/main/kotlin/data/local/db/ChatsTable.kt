@@ -10,7 +10,7 @@ import org.jetbrains.exposed.sql.upsert
 
 object ChatsTable : Table("chats") {
     private val id = integer("chat_id").autoIncrement()
-    val telegramChatId = long("telegram_chat_id").references(ReceiversTable.telegramChatId).uniqueIndex()
+    val telegramChatId = long("telegram_chat_id")
     val title = varchar("title", 100)
     override val primaryKey = PrimaryKey(id, name = "chat_id")
 

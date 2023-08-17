@@ -4,6 +4,7 @@ import dev.inmo.tgbotapi.extensions.api.send.reply
 import dev.inmo.tgbotapi.extensions.api.send.send
 import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
 import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.*
+import dev.inmo.tgbotapi.extensions.utils.userSharedOrNull
 import dev.inmo.tgbotapi.types.chat.PrivateChat
 import handlers.ActionHandlers
 import javax.inject.Inject
@@ -17,8 +18,9 @@ class UserActionHandlers @Inject constructor(
             onPhoto { message ->
                 actionsController.handleCallWithPhoto(message)
             }
+
             onCommand("start", initialFilter = { it.chat is PrivateChat }) {
-                send(it.chat, "Start message")
+                actionsController.handleStartCommand(it)
             }
 
             onCommand("help") {
@@ -30,6 +32,10 @@ class UserActionHandlers @Inject constructor(
 
             onSticker {
                 reply(it, "Спасибо за стикер)")
+            }
+
+            onUserLoggedIn {
+                println("User ${it.chatEvent.userSharedOrNull()} logged in")
             }
 
             onContentMessage {
