@@ -1,15 +1,14 @@
 package handlers.user
 
+import dev.inmo.micro_utils.coroutines.runCatchingSafely
 import dev.inmo.tgbotapi.extensions.api.chat.get.getChat
 import dev.inmo.tgbotapi.extensions.api.forwardMessage
 import dev.inmo.tgbotapi.extensions.api.send.send
 import dev.inmo.tgbotapi.extensions.api.send.withTypingAction
 import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
-import dev.inmo.tgbotapi.extensions.utils.shortcuts.executeUnsafe
 import dev.inmo.tgbotapi.types.ChatId
 import dev.inmo.tgbotapi.types.chat.ExtendedPrivateChat
 import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
-import dev.inmo.tgbotapi.types.message.abstracts.PossiblyForwardedMessage
 import dev.inmo.tgbotapi.types.message.content.PhotoContent
 import dev.inmo.tgbotapi.types.message.content.TextContent
 import dev.inmo.tgbotapi.utils.extensions.threadIdOrNull
@@ -30,28 +29,35 @@ class UserActionsController @Inject constructor(
         receivers.forEach { chat ->
             behaviourContext.withTypingAction(receivedMessage.chat) {
                 if (receivedMessage.forwardable) {
-                    val message: PossiblyForwardedMessage = receivedMessage
-                    message.apply {
-                        val new = forwardMessage(
+                    runCatchingSafely {
+                        forwardMessage(
                             ChatId(chat.telegramChatId),
                             receivedMessage,
                             threadId = receivedMessage.threadIdOrNull
                         )
-                        println(new)
+                    }.onFailure {
+                        deleteUser(chat.telegramChatId)
+                        it.printStackTrace()
                     }
                 } else {
-                    executeUnsafe(
+                    runCatchingSafely {
                         receivedMessage.content.createResend(
                             ChatId(chat.telegramChatId),
                             messageThreadId = receivedMessage.threadIdOrNull,
                             allowSendingWithoutReply = false
                         )
-                    ) { errorsList ->
-                        errorsList.forEach { println(it) }
+                    }.onFailure {
+                        deleteUser(chat.telegramChatId)
+                        it.printStackTrace()
                     }
                 }
             }
         }
+    }
+
+    private suspend fun deleteUser(telegramChatId: Long) {
+        usersRepository.removeUser(telegramChatId)
+        receiversRepository.removeReceiver(telegramChatId)
     }
 
     suspend fun handleStartCommand(receivedMessage: CommonMessage<TextContent>) {
