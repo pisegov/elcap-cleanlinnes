@@ -1,11 +1,11 @@
-package domain
+package data.local
 
 import domain.model.Admin
 import domain.states.InsertionState
 
-interface AdminsRepository {
+interface AdminsDataSource {
     suspend fun addAdmin(telegramChatId: Long): InsertionState
     suspend fun removeAdmin(telegramChatId: Long)
 
-    suspend fun getAdminsList(): List<Admin>
+    suspend fun getAllAdmins(): List<Admin>
 }

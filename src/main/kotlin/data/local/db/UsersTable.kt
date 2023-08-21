@@ -18,7 +18,7 @@ object UsersTable : Table("bot_users") {
     private val table = this
 
     init {
-        uniqueIndex(ReceiversTable.telegramChatId)
+        uniqueIndex(telegramChatId)
     }
 
     fun insert(user: User) {

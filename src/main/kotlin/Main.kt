@@ -1,6 +1,7 @@
 import constants.BOT_TOKEN
 import constants.mysql_password
 import constants.mysql_user
+import data.local.db.AdminsTable
 import data.local.db.ChatsTable
 import data.local.db.ReceiversTable
 import data.local.db.UsersTable
@@ -31,6 +32,7 @@ suspend fun main() {
             SchemaUtils.create(ReceiversTable)
             SchemaUtils.create(ChatsTable)
             SchemaUtils.create(UsersTable)
+            SchemaUtils.create(AdminsTable)
         }
 
         val applicationComponent = DaggerApplicationComponent.factory().create(this)

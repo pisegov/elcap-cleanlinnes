@@ -1,9 +1,7 @@
 package handlers.admin
 
 import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
-import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onChatShared
 import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onCommand
-import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onUserShared
 import dev.inmo.tgbotapi.types.chat.PrivateChat
 import handlers.ActionHandlers
 import javax.inject.Inject
@@ -22,12 +20,12 @@ class AdminActionHandlers @Inject constructor(
                 actionsController.addReceiver(message)
             }
 
-            onUserShared { message ->
-                actionsController.handleSharedChat(message)
+            onCommand("add_admin", initialFilter = { it.chat is PrivateChat }) { message ->
+                actionsController.addAdmin(message)
             }
 
-            onChatShared { message ->
-                actionsController.handleSharedChat(message)
+            onCommand("show_admins", initialFilter = { it.chat is PrivateChat }) { message ->
+                actionsController.showAllAdmins(message)
             }
         }
     }
