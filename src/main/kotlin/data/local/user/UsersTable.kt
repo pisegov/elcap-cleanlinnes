@@ -11,7 +11,7 @@ import org.jetbrains.exposed.sql.upsert
 object UsersTable : Table("bot_users") {
     private val id = integer("user_id").autoIncrement()
     val telegramChatId = long("telegram_chat_id")
-    val name = varchar("name", 100)
+    val name = varchar("name", 100).nullable()
     val username = varchar("telegram_username", 100).nullable()
     override val primaryKey = PrimaryKey(id, name = "user_id")
 
@@ -39,7 +39,7 @@ object UsersTable : Table("bot_users") {
                 UserDTO(
                     id = model[UsersTable.id],
                     telegramChatId = model[telegramChatId],
-                    name = model[name],
+                    name = model[name] ?: "",
                     username = model[username],
                 )
             }

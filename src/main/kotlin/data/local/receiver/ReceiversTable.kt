@@ -32,25 +32,26 @@ object ReceiversTable : Table("receivers") {
 
     fun getAllReceivers(): List<Receiver> {
         return transaction {
-            val usersList =
-                table.join(UsersTable, JoinType.INNER, telegramChatId, UsersTable.telegramChatId).selectAll()
-                    .toList().map {
-                        User(
-                            telegramChatId = it[telegramChatId],
-                            name = it[UsersTable.name],
-                            username = it[UsersTable.username]
-                        )
-                    }
             val chatsList =
-                table.join(ChatsTable, JoinType.INNER, telegramChatId, ChatsTable.telegramChatId).selectAll()
-                    .toList().map {
-                        Chat(
-                            telegramChatId = it[telegramChatId],
-                            title = it[ChatsTable.title]
-                        )
+                table.join(UsersTable, JoinType.LEFT, telegramChatId, UsersTable.telegramChatId)
+                    .join(ChatsTable, JoinType.LEFT, telegramChatId, ChatsTable.telegramChatId).selectAll()
+                    .map {
+                        val name = it[UsersTable.name] ?: ""
+                        if (name.isNotEmpty()) {
+                            User(
+                                telegramChatId = it[telegramChatId],
+                                name = name,
+                                username = it[UsersTable.username]
+                            )
+                        } else {
+                            Chat(
+                                telegramChatId = it[telegramChatId],
+                                title = it[ChatsTable.title] ?: ""
+                            )
+                        }
                     }
 
-            (usersList + chatsList)
+            chatsList
         }
     }
 
@@ -60,4 +61,3 @@ object ReceiversTable : Table("receivers") {
         }
     }
 }
-

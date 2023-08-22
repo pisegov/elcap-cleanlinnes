@@ -19,6 +19,7 @@ import dev.inmo.tgbotapi.types.request.ChatSharedRequest
 import dev.inmo.tgbotapi.types.request.UserShared
 import domain.AdminsRepository
 import domain.ReceiversRepository
+import domain.model.Receiver
 import domain.states.InsertionState
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
@@ -34,9 +35,27 @@ class AdminActionsController @Inject constructor(
     private val sharedReceiverHandler: SharedReceiverHandler,
 ) {
     suspend fun showReceivers(message: CommonMessage<TextContent>) = withAdminCheck {
+        val replyString = StringBuilder()
+
+        val receiversList = receiversRepository.getReceiversList()
+        val activeReceivers = receiversList.filter { it.title.isNotEmpty() }
+        val notActiveReceivers = receiversList.filter { it.title.isEmpty() }
+
+        if (activeReceivers.isNotEmpty()) {
+            replyString.append("Активные получатели:\n\n")
+            activeReceivers.forEach { receiver: Receiver ->
+                replyString.append("${receiver.title}\nTelegram chat id: ${receiver.telegramChatId}\n\n")
+            }
+        }
+        if (notActiveReceivers.isNotEmpty()) {
+            replyString.append("\nНеактивные получатели:\n\n")
+            notActiveReceivers.forEach { receiver: Receiver ->
+                replyString.append("Telegram chat id: ${receiver.telegramChatId}\n")
+            }
+        }
         behaviourContext.reply(
             message,
-            receiversRepository.getReceiversList().toString(),
+            replyString.toString(),
         )
     }
 

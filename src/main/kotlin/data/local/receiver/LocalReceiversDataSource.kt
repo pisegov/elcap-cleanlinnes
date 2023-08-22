@@ -26,6 +26,11 @@ class LocalReceiversDataSource @Inject constructor() : ReceiversDataSource {
     }
 
     override suspend fun getReceiversList(): List<Receiver> {
-        return ReceiversTable.getAllReceivers()
+        try {
+            return ReceiversTable.getAllReceivers()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return listOf()
     }
 }
