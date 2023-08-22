@@ -1,4 +1,4 @@
-package data.local.db
+package data.local.chat
 
 import domain.model.Chat
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -35,9 +35,9 @@ object ChatsTable : Table("chats") {
 
             listModel.toList().map { model ->
                 ChatDTO(
-                    id = model[table.id],
-                    telegramChatId = model[table.telegramChatId],
-                    title = model[table.title],
+                    id = model[ChatsTable.id],
+                    telegramChatId = model[telegramChatId],
+                    title = model[title],
                 )
             }
         }
@@ -45,7 +45,7 @@ object ChatsTable : Table("chats") {
 
     fun removeChat(telegramChatId: Long) {
         transaction {
-            table.deleteWhere { table.telegramChatId.eq(telegramChatId) }
+            table.deleteWhere { ChatsTable.telegramChatId.eq(telegramChatId) }
         }
     }
 }

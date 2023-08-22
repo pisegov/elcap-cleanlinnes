@@ -1,6 +1,5 @@
-package data
+package data.local.user
 
-import data.local.UsersDataSource
 import domain.UsersRepository
 import domain.model.User
 import kotlinx.coroutines.Dispatchers

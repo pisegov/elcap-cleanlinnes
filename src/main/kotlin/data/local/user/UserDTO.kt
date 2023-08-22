@@ -1,4 +1,4 @@
-package data.local.db
+package data.local.user
 
 data class UserDTO(
     val id: Int,

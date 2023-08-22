@@ -1,5 +1,6 @@
-package data.local.db
+package data.local.admin
 
+import data.local.user.UsersTable
 import domain.model.Admin
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -27,11 +28,11 @@ object AdminsTable : Table("admins") {
     }
 
     fun removeAdmin(telegramChatId: Long) = transaction {
-        table.deleteWhere { table.telegramChatId.eq(telegramChatId) }
+        table.deleteWhere { AdminsTable.telegramChatId.eq(telegramChatId) }
     }
 
     fun getAllAdmins(): List<Admin> = transaction {
-        table.join(UsersTable, JoinType.LEFT, table.telegramChatId, UsersTable.telegramChatId).selectAll()
+        table.join(UsersTable, JoinType.LEFT, telegramChatId, UsersTable.telegramChatId).selectAll()
             .map {
                 Admin(
                     telegramChatId = it[telegramChatId],

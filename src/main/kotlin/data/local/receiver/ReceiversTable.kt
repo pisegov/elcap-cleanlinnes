@@ -1,5 +1,7 @@
-package data.local.db
+package data.local.receiver
 
+import data.local.chat.ChatsTable
+import data.local.user.UsersTable
 import domain.model.Chat
 import domain.model.Receiver
 import domain.model.User
@@ -31,7 +33,7 @@ object ReceiversTable : Table("receivers") {
     fun getAllReceivers(): List<Receiver> {
         return transaction {
             val usersList =
-                table.join(UsersTable, JoinType.INNER, table.telegramChatId, UsersTable.telegramChatId).selectAll()
+                table.join(UsersTable, JoinType.INNER, telegramChatId, UsersTable.telegramChatId).selectAll()
                     .toList().map {
                         User(
                             telegramChatId = it[telegramChatId],
@@ -40,13 +42,13 @@ object ReceiversTable : Table("receivers") {
                         )
                     }
             val chatsList =
-                table.join(ChatsTable, JoinType.INNER, table.telegramChatId, ChatsTable.telegramChatId).selectAll()
+                table.join(ChatsTable, JoinType.INNER, telegramChatId, ChatsTable.telegramChatId).selectAll()
                     .toList().map {
-                    Chat(
-                        telegramChatId = it[telegramChatId],
-                        title = it[ChatsTable.title]
-                    )
-                }
+                        Chat(
+                            telegramChatId = it[telegramChatId],
+                            title = it[ChatsTable.title]
+                        )
+                    }
 
             (usersList + chatsList)
         }
@@ -54,7 +56,7 @@ object ReceiversTable : Table("receivers") {
 
     fun removeReceiver(telegramChatId: Long) {
         transaction {
-            table.deleteWhere { table.telegramChatId.eq(telegramChatId) }
+            table.deleteWhere { ReceiversTable.telegramChatId.eq(telegramChatId) }
         }
     }
 }

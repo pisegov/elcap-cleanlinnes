@@ -1,4 +1,4 @@
-package data.local.db
+package data.local.chat
 
 data class ChatDTO(
     val id: Int,

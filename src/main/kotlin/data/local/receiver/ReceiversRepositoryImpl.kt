@@ -1,6 +1,5 @@
-package data
+package data.local.receiver
 
-import data.local.ReceiversDataSource
 import domain.ReceiversRepository
 import domain.model.Receiver
 import domain.states.InsertionState

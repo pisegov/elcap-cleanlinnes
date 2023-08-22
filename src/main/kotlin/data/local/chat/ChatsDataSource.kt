@@ -1,4 +1,4 @@
-package data.local
+package data.local.chat
 
 import domain.model.Chat
 

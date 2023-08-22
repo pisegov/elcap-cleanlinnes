@@ -1,4 +1,4 @@
-package data.local
+package data.local.user
 
 import domain.model.User
 

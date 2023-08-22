@@ -1,4 +1,4 @@
-package data.local
+package data.local.admin
 
 import domain.model.Admin
 import domain.states.InsertionState

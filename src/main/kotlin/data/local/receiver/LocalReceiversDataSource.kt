@@ -1,6 +1,5 @@
-package data.local.db
+package data.local.receiver
 
-import data.local.ReceiversDataSource
 import domain.model.Receiver
 import domain.states.InsertionState
 import org.jetbrains.exposed.exceptions.ExposedSQLException

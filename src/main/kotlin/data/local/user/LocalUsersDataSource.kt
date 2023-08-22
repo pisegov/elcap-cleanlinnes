@@ -1,6 +1,6 @@
-package data.local.db
+package data.local.user
 
-import data.local.UsersDataSource
+import data.local.toUser
 import domain.model.User
 import javax.inject.Inject
 

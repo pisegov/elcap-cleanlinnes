@@ -1,6 +1,5 @@
-package data
+package data.local.chat
 
-import data.local.ChatsDataSource
 import domain.ChatsRepository
 import domain.model.Chat
 import kotlinx.coroutines.Dispatchers

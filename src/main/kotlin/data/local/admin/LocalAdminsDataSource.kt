@@ -1,6 +1,5 @@
-package data.local.db
+package data.local.admin
 
-import data.local.AdminsDataSource
 import domain.model.Admin
 import domain.states.InsertionState
 import org.jetbrains.exposed.exceptions.ExposedSQLException

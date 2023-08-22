@@ -1,4 +1,4 @@
-package data.local.db
+package data.local.user
 
 import domain.model.User
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -37,10 +37,10 @@ object UsersTable : Table("bot_users") {
 
             listModel.toList().map { model ->
                 UserDTO(
-                    id = model[table.id],
-                    telegramChatId = model[table.telegramChatId],
-                    name = model[table.name],
-                    username = model[table.username],
+                    id = model[UsersTable.id],
+                    telegramChatId = model[telegramChatId],
+                    name = model[name],
+                    username = model[username],
                 )
             }
         }
@@ -48,7 +48,7 @@ object UsersTable : Table("bot_users") {
 
     fun removeUser(telegramChatId: Long) {
         transaction {
-            table.deleteWhere { table.telegramChatId.eq(telegramChatId) }
+            table.deleteWhere { UsersTable.telegramChatId.eq(telegramChatId) }
         }
     }
 }

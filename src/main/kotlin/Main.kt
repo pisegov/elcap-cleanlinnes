@@ -1,10 +1,10 @@
 import constants.BOT_TOKEN
 import constants.mysql_password
 import constants.mysql_user
-import data.local.db.AdminsTable
-import data.local.db.ChatsTable
-import data.local.db.ReceiversTable
-import data.local.db.UsersTable
+import data.local.admin.AdminsTable
+import data.local.chat.ChatsTable
+import data.local.receiver.ReceiversTable
+import data.local.user.UsersTable
 import dev.inmo.tgbotapi.bot.ktor.telegramBot
 import dev.inmo.tgbotapi.extensions.api.bot.getMe
 import dev.inmo.tgbotapi.extensions.api.bot.setMyCommands

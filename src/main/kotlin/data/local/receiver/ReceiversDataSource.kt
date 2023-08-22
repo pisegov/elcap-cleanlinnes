@@ -1,4 +1,4 @@
-package data.local
+package data.local.receiver
 
 import domain.model.Receiver
 import domain.states.InsertionState

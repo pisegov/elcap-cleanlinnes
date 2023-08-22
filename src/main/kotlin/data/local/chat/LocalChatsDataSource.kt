@@ -1,6 +1,6 @@
-package data.local.db
+package data.local.chat
 
-import data.local.ChatsDataSource
+import data.local.toChat
 import domain.model.Chat
 import javax.inject.Inject
 

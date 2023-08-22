@@ -1,5 +1,7 @@
-package data.local.db
+package data.local
 
+import data.local.chat.ChatDTO
+import data.local.user.UserDTO
 import domain.model.Chat
 import domain.model.User
 

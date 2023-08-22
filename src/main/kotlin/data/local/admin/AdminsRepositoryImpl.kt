@@ -1,6 +1,5 @@
-package data
+package data.local.admin
 
-import data.local.AdminsDataSource
 import domain.AdminsRepository
 import domain.model.Admin
 import kotlinx.coroutines.Dispatchers
