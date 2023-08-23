@@ -4,7 +4,9 @@ data class User(
     override val telegramChatId: Long,
     val name: String = "",
     val username: String? = null,
-) : Receiver {
-    override val title: String
+) : Receiver, Admin {
+    override val fullName: String
         get() = username?.let { "$name ($username)" } ?: name
+    override val title: String
+        get() = fullName
 }

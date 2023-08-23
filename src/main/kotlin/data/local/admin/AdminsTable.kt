@@ -2,6 +2,7 @@ package data.local.admin
 
 import data.local.user.UsersTable
 import domain.model.Admin
+import domain.model.User
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -34,9 +35,10 @@ object AdminsTable : Table("admins") {
     fun getAllAdmins(): List<Admin> = transaction {
         table.join(UsersTable, JoinType.LEFT, telegramChatId, UsersTable.telegramChatId).selectAll()
             .map {
-                Admin(
+                User(
                     telegramChatId = it[telegramChatId],
-                    name = it[UsersTable.name]
+                    name = it[UsersTable.name] ?: "",
+                    username = it[UsersTable.username]
                 )
             }
     }

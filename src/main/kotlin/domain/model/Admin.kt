@@ -1,6 +1,6 @@
 package domain.model
 
-data class Admin(
-    val telegramChatId: Long,
-    val name: String? = null,
-)
+interface Admin {
+    val telegramChatId: Long
+    val fullName: String
+}

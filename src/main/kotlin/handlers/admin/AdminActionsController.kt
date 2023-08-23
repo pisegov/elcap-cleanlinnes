@@ -19,6 +19,7 @@ import dev.inmo.tgbotapi.types.request.ChatSharedRequest
 import dev.inmo.tgbotapi.types.request.UserShared
 import domain.AdminsRepository
 import domain.ReceiversRepository
+import domain.model.Admin
 import domain.model.Receiver
 import domain.states.InsertionState
 import kotlinx.coroutines.flow.filter
@@ -92,9 +93,27 @@ class AdminActionsController @Inject constructor(
     }
 
     suspend fun showAllAdmins(message: CommonMessage<TextContent>) = withAdminCheck {
+        val replyString = StringBuilder()
+
+        val adminsList = adminsRepository.getAdminsList()
+        val activeAdmins = adminsList.filter { it.fullName.isNotEmpty() }
+        val notActiveAdmins = adminsList.filter { it.fullName.isEmpty() }
+
+        if (activeAdmins.isNotEmpty()) {
+            replyString.append("Активные администраторы:\n\n")
+            activeAdmins.forEach { admin: Admin ->
+                replyString.append("${admin.fullName}\nTelegram chat id: ${admin.telegramChatId}\n\n")
+            }
+        }
+        if (notActiveAdmins.isNotEmpty()) {
+            replyString.append("\nНеактивные администраторы:\n\n")
+            notActiveAdmins.forEach { admin: Admin ->
+                replyString.append("Telegram chat id: ${admin.telegramChatId}\n")
+            }
+        }
         behaviourContext.reply(
             message,
-            adminsRepository.getAdminsList().toString(),
+            replyString.toString(),
         )
     }
 
