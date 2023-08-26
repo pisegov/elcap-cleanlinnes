@@ -1,6 +1,7 @@
 package handlers.admin
 
 import domain.states.InsertionState
+import util.removedDoubleSpaces
 import javax.inject.Inject
 
 class SharedAdminHandler @Inject constructor() {
@@ -22,7 +23,7 @@ class SharedAdminHandler @Inject constructor() {
             }
         }
 
-        return replyString.replace("\\s{2,}".toRegex(), " ")
+        return replyString.removedDoubleSpaces()
     }
 
     private fun receiverReply(chatIsActivated: Boolean): String {

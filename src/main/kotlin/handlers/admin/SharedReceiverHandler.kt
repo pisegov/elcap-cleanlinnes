@@ -4,6 +4,7 @@ import dev.inmo.tgbotapi.types.request.ChatShared
 import dev.inmo.tgbotapi.types.request.ChatSharedRequest
 import dev.inmo.tgbotapi.types.request.UserShared
 import domain.states.InsertionState
+import util.removedDoubleSpaces
 import javax.inject.Inject
 
 class SharedReceiverHandler @Inject constructor() {
@@ -25,7 +26,7 @@ class SharedReceiverHandler @Inject constructor() {
             }
         }
 
-        return replyString.replace("\\s{2,}".toRegex(), " ")
+        return replyString.removedDoubleSpaces()
     }
 
     private fun receiverReply(chatEvent: ChatSharedRequest, chatIsActivated: Boolean): String {

@@ -8,17 +8,18 @@ import data.local.user.UsersTable
 import dev.inmo.tgbotapi.bot.ktor.telegramBot
 import dev.inmo.tgbotapi.extensions.api.bot.getMe
 import dev.inmo.tgbotapi.extensions.api.bot.setMyCommands
-import dev.inmo.tgbotapi.extensions.behaviour_builder.buildBehaviourWithLongPolling
+import dev.inmo.tgbotapi.extensions.behaviour_builder.buildBehaviourWithFSMAndStartLongPolling
 import dev.inmo.tgbotapi.types.BotCommand
 import ioc.DaggerApplicationComponent
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 
+
 suspend fun main() {
     val bot = telegramBot(BOT_TOKEN)
 
-    bot.buildBehaviourWithLongPolling {
+    bot.buildBehaviourWithFSMAndStartLongPolling {
         println(getMe())
 
         Database.connect(

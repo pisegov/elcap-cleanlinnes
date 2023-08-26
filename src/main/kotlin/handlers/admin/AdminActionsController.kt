@@ -3,7 +3,8 @@ package handlers.admin
 import dev.inmo.micro_utils.coroutines.runCatchingSafely
 import dev.inmo.tgbotapi.extensions.api.chat.get.getChat
 import dev.inmo.tgbotapi.extensions.api.send.reply
-import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
+import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContextWithFSM
+import dev.inmo.tgbotapi.extensions.behaviour_builder.expectations.waitAnyContentMessage
 import dev.inmo.tgbotapi.extensions.behaviour_builder.expectations.waitChatSharedRequestEventsMessages
 import dev.inmo.tgbotapi.extensions.behaviour_builder.expectations.waitUserSharedEventsMessages
 import dev.inmo.tgbotapi.extensions.utils.extensions.sameThread
@@ -25,11 +26,13 @@ import domain.states.InsertionState
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import states.BotState
 import util.KeyboardBuilder
+import util.ResourceProvider
 import javax.inject.Inject
 
 class AdminActionsController @Inject constructor(
-    private val behaviourContext: BehaviourContext,
+    private val behaviourContext: BehaviourContextWithFSM<BotState>,
     private val receiversRepository: ReceiversRepository,
     private val adminsRepository: AdminsRepository,
     private val sharedAdminHandler: SharedAdminHandler,
@@ -115,6 +118,59 @@ class AdminActionsController @Inject constructor(
             message,
             replyString.toString(),
         )
+    }
+
+    suspend fun showRemoveAdminKeyboard(receivedMessage: CommonMessage<TextContent>) = withAdminCheck {
+        val adminsList = adminsRepository.getAdminsList()
+
+        with(behaviourContext) {
+            reply(
+                receivedMessage,
+                "Воспользуйтесь клавиатурой, выбрать администратора:",
+                replyMarkup = KeyboardBuilder.adminsToRemoveKeyboard(adminsList),
+            )
+
+            startChain(BotState.ExpectSharedAdminToDelete(receivedMessage.chat.id, receivedMessage))
+        }
+    }
+
+    suspend fun handleSharedAdminToDelete(state: BotState.ExpectSharedAdminToDelete): BotState {
+        with(behaviourContext) {
+            val contentMessage = waitAnyContentMessage().filter { message ->
+                message.sameThread(state.sourceMessage)
+            }.first()
+            val content = contentMessage.content
+
+            return when {
+                // Handle cancellation
+                content is TextContent && content.text == ResourceProvider.CANCEL_STRING -> {
+                    BotState.StopState(state.context)
+                }
+
+                content is TextContent -> {
+                    val id = parseTelegramChatId(content.text)
+                    if (id != null) {
+                        adminsRepository.removeAdmin(id)
+                        BotState.CorrectInputSharedAdminToDelete(
+                            state.context,
+                            deletedAdminFullName = content.text.substringBefore("[").trimEnd()
+                        )
+                    } else {
+                        // Handle wrong input
+                        BotState.WrongInputSharedAdminToDelete(state.context, sourceMessage = state.sourceMessage)
+                    }
+                }
+
+                else -> {
+                    // Handle wrong input
+                    BotState.WrongInputSharedAdminToDelete(state.context, sourceMessage = state.sourceMessage)
+                }
+            }
+        }
+    }
+
+    private fun parseTelegramChatId(string: String): Long? {
+        return string.substringAfter("[id:").substringBefore("]").toLongOrNull()
     }
 
     private suspend fun <T> withAdminCheck(block: suspend () -> T): T {
