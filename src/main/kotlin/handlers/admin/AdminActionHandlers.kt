@@ -17,14 +17,6 @@ class AdminActionHandlers @Inject constructor(
 ) : ActionHandlers {
     override suspend fun setupHandlers() {
         with(behaviourContext) {
-            onCommand("show_receivers", initialFilter = { it.chat is PrivateChat }) { message ->
-                actionsController.showReceivers(message)
-            }
-
-            onCommand("add_receiver", initialFilter = { it.chat is PrivateChat }) { message ->
-                actionsController.addReceiver(message)
-            }
-
             onCommand("add_admin", initialFilter = { it.chat is PrivateChat }) { message ->
                 actionsController.addAdmin(message)
             }
@@ -41,9 +33,8 @@ class AdminActionHandlers @Inject constructor(
                 actionsController.showRemoveAdminKeyboard(message)
             }
 
-
             strictlyOn<ExpectSharedAdminToDelete> {
-                actionsController.handleSharedAdminToDelete(it)
+                actionsController.handleSharedAdminIdToDelete(it)
             }
 
             strictlyOn<CorrectInputSharedAdminToDelete> {
@@ -70,6 +61,16 @@ class AdminActionHandlers @Inject constructor(
 
             strictlyOn<StopState> {
                 send(it.context, replyMarkup = ReplyKeyboardRemove()) { +"Действие отменено" }
+
+                // Return initial state
+                null
+            }
+
+            strictlyOn<PermissionsDeniedState> {
+                send(
+                    it.context,
+                    replyMarkup = ReplyKeyboardRemove()
+                ) { +"Oops, у вас нет прав для выполнения этой команды" }
 
                 // Return initial state
                 null

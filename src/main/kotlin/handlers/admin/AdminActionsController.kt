@@ -1,27 +1,19 @@
 package handlers.admin
 
-import dev.inmo.micro_utils.coroutines.runCatchingSafely
-import dev.inmo.tgbotapi.extensions.api.chat.get.getChat
 import dev.inmo.tgbotapi.extensions.api.send.reply
 import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContextWithFSM
 import dev.inmo.tgbotapi.extensions.behaviour_builder.expectations.waitAnyContentMessage
-import dev.inmo.tgbotapi.extensions.behaviour_builder.expectations.waitChatSharedRequestEventsMessages
 import dev.inmo.tgbotapi.extensions.behaviour_builder.expectations.waitUserSharedEventsMessages
 import dev.inmo.tgbotapi.extensions.utils.extensions.sameThread
-import dev.inmo.tgbotapi.types.ChatId
+import dev.inmo.tgbotapi.types.IdChatIdentifier
 import dev.inmo.tgbotapi.types.UserId
 import dev.inmo.tgbotapi.types.buttons.ReplyKeyboardRemove
-import dev.inmo.tgbotapi.types.chat.ExtendedPrivateChat
-import dev.inmo.tgbotapi.types.chat.GroupChat
 import dev.inmo.tgbotapi.types.message.abstracts.ChatEventMessage
 import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
 import dev.inmo.tgbotapi.types.message.content.TextContent
-import dev.inmo.tgbotapi.types.request.ChatSharedRequest
 import dev.inmo.tgbotapi.types.request.UserShared
 import domain.AdminsRepository
-import domain.ReceiversRepository
 import domain.model.Admin
-import domain.model.Receiver
 import domain.states.InsertionState
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
@@ -29,57 +21,16 @@ import kotlinx.coroutines.launch
 import states.BotState
 import util.KeyboardBuilder
 import util.ResourceProvider
+import util.getChatTitle
 import javax.inject.Inject
 
 class AdminActionsController @Inject constructor(
     private val behaviourContext: BehaviourContextWithFSM<BotState>,
-    private val receiversRepository: ReceiversRepository,
     private val adminsRepository: AdminsRepository,
     private val sharedAdminHandler: SharedAdminHandler,
-    private val sharedReceiverHandler: SharedReceiverHandler,
+    private val permissionsChecker: PermissionsChecker,
 ) {
-    suspend fun showReceivers(message: CommonMessage<TextContent>) = withAdminCheck {
-        val replyString = StringBuilder()
-
-        val receiversList = receiversRepository.getReceiversList()
-        val activeReceivers = receiversList.filter { it.title.isNotEmpty() }
-        val notActiveReceivers = receiversList.filter { it.title.isEmpty() }
-
-        if (activeReceivers.isNotEmpty()) {
-            replyString.append("Активные получатели:\n\n")
-            activeReceivers.forEach { receiver: Receiver ->
-                replyString.append("${receiver.title}\nTelegram chat id: ${receiver.telegramChatId}\n\n")
-            }
-        }
-        if (notActiveReceivers.isNotEmpty()) {
-            replyString.append("\nНеактивные получатели:\n\n")
-            notActiveReceivers.forEach { receiver: Receiver ->
-                replyString.append("Telegram chat id: ${receiver.telegramChatId}\n")
-            }
-        }
-        behaviourContext.reply(
-            message,
-            replyString.toString(),
-        )
-    }
-
-    suspend fun addReceiver(receivedMessage: CommonMessage<TextContent>) = withAdminCheck {
-        with(behaviourContext) {
-            reply(
-                receivedMessage,
-                "Воспользуйтесь кнопкой, чтобы отправить боту пользователя или группу:",
-                replyMarkup = KeyboardBuilder.shareChatKeyboard(),
-            )
-
-            val shared = waitChatSharedRequestEventsMessages().filter { message ->
-                message.sameThread(receivedMessage)
-            }.first()
-
-            handleSharedChat(shared)
-        }
-    }
-
-    suspend fun addAdmin(receivedMessage: CommonMessage<TextContent>) = withAdminCheck {
+    suspend fun addAdmin(receivedMessage: CommonMessage<TextContent>) = withAdminCheck(receivedMessage.chat.id) {
         with(behaviourContext) {
             reply(
                 receivedMessage,
@@ -95,7 +46,7 @@ class AdminActionsController @Inject constructor(
         }
     }
 
-    suspend fun showAllAdmins(message: CommonMessage<TextContent>) = withAdminCheck {
+    suspend fun showAllAdmins(message: CommonMessage<TextContent>) = withAdminCheck(message.chat.id) {
         val replyString = StringBuilder()
 
         val adminsList = adminsRepository.getAdminsList()
@@ -120,52 +71,62 @@ class AdminActionsController @Inject constructor(
         )
     }
 
-    suspend fun showRemoveAdminKeyboard(receivedMessage: CommonMessage<TextContent>) = withAdminCheck {
-        val adminsList = adminsRepository.getAdminsList()
+    suspend fun showRemoveAdminKeyboard(receivedMessage: CommonMessage<TextContent>) =
+        withAdminCheck(receivedMessage.chat.id) {
+            val adminsList = adminsRepository.getAdminsList()
 
-        with(behaviourContext) {
-            reply(
-                receivedMessage,
-                "Воспользуйтесь клавиатурой, выбрать администратора:",
-                replyMarkup = KeyboardBuilder.adminsToRemoveKeyboard(adminsList),
-            )
+            with(behaviourContext) {
+                reply(
+                    receivedMessage,
+                    "Воспользуйтесь клавиатурой, выбрать администратора:",
+                    replyMarkup = KeyboardBuilder.adminsToRemoveKeyboard(adminsList),
+                )
 
-            startChain(BotState.ExpectSharedAdminToDelete(receivedMessage.chat.id, receivedMessage))
+                startChain(BotState.ExpectSharedAdminToDelete(receivedMessage.chat.id, receivedMessage))
+            }
         }
-    }
 
-    suspend fun handleSharedAdminToDelete(state: BotState.ExpectSharedAdminToDelete): BotState {
+    suspend fun handleSharedAdminIdToDelete(state: BotState.ExpectSharedAdminToDelete): BotState {
         with(behaviourContext) {
             val contentMessage = waitAnyContentMessage().filter { message ->
                 message.sameThread(state.sourceMessage)
             }.first()
-            val content = contentMessage.content
 
-            return when {
-                // Handle cancellation
-                content is TextContent && content.text == ResourceProvider.CANCEL_STRING -> {
-                    BotState.StopState(state.context)
-                }
+            return try {
+                // throws cast exception
+                val content = contentMessage.content as TextContent
 
-                content is TextContent -> {
-                    val id = parseTelegramChatId(content.text)
-                    if (id != null) {
+                val id: Long? = parseTelegramChatId(content.text)
+                when {
+                    // Handle cancellation
+                    content.text == ResourceProvider.CANCEL_STRING -> {
+                        BotState.StopState(state.context)
+                    }
+
+                    id != null -> {
                         adminsRepository.removeAdmin(id)
                         BotState.CorrectInputSharedAdminToDelete(
                             state.context,
                             deletedAdminFullName = content.text.substringBefore("[").trimEnd()
                         )
-                    } else {
-                        // Handle wrong input
-                        BotState.WrongInputSharedAdminToDelete(state.context, sourceMessage = state.sourceMessage)
+                    }
+
+                    else -> {
+                        throw Exception("Message has no valid chat id")
                     }
                 }
-
-                else -> {
-                    // Handle wrong input
-                    BotState.WrongInputSharedAdminToDelete(state.context, sourceMessage = state.sourceMessage)
-                }
+            } catch (e: Exception) {
+                // Handle wrong input
+                BotState.WrongInputSharedAdminToDelete(state.context, sourceMessage = state.sourceMessage)
             }
+        }
+    }
+
+    private suspend fun <T> withAdminCheck(chatIdentifier: IdChatIdentifier, block: suspend () -> T) {
+        try {
+            permissionsChecker.checkPermissions(chatIdentifier.chatId, block)
+        } catch (e: Exception) {
+            behaviourContext.startChain(BotState.PermissionsDeniedState(chatIdentifier))
         }
     }
 
@@ -173,35 +134,12 @@ class AdminActionsController @Inject constructor(
         return string.substringAfter("[id:").substringBefore("]").toLongOrNull()
     }
 
-    private suspend fun <T> withAdminCheck(block: suspend () -> T): T {
-        // Do admin check
-        // throw exception if it's not succeeded
-        return block.invoke()
-    }
-
-    private suspend fun handleSharedChat(receivedMessage: ChatEventMessage<out ChatSharedRequest>) {
-        val chatEvent = receivedMessage.chatEvent
-        val chatIdentifier = chatEvent.chatId as ChatId
-
-        behaviourContext.launch {
-            val insertionState = receiversRepository.addReceiver(chatIdentifier.chatId)
-            val chatTitle = getChatTitle(chatIdentifier)
-            val replyString = sharedReceiverHandler.getReplyString(insertionState, chatTitle, chatEvent)
-
-            behaviourContext.reply(
-                receivedMessage,
-                replyString,
-                replyMarkup = ReplyKeyboardRemove()
-            )
-        }
-    }
-
     private fun handleSharedAdmin(eventMessage: ChatEventMessage<UserShared>) {
         val chatIdentifier: UserId = eventMessage.chatEvent.userId
         val userId: Long = chatIdentifier.chatId
         behaviourContext.launch {
             val insertionState: InsertionState = adminsRepository.addAdmin(userId)
-            val chatTitle: String = getChatTitle(chatIdentifier)
+            val chatTitle: String = chatIdentifier.getChatTitle(behaviourContext)
             val replyString: String = sharedAdminHandler.getReplyString(insertionState, chatTitle)
 
             behaviourContext.reply(
@@ -210,24 +148,5 @@ class AdminActionsController @Inject constructor(
                 replyMarkup = ReplyKeyboardRemove()
             )
         }
-    }
-
-    private suspend fun getChatTitle(chatIdentifier: ChatId): String {
-        return runCatchingSafely {
-            val chat = behaviourContext.getChat(chatIdentifier)
-            when (chat) {
-                is ExtendedPrivateChat -> {
-                    "${chat.firstName} ${chat.lastName}".trim()
-                }
-
-                is GroupChat -> {
-                    chat.title
-                }
-
-                else -> {
-                    ""
-                }
-            }
-        }.getOrDefault("")
     }
 }

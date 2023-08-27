@@ -1,4 +1,4 @@
-package handlers.admin
+package handlers.receiver
 
 import dev.inmo.tgbotapi.types.request.ChatShared
 import dev.inmo.tgbotapi.types.request.ChatSharedRequest

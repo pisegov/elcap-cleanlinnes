@@ -22,4 +22,6 @@ sealed interface BotState : State {
     ) : BotState
 
     data class StopState(override val context: IdChatIdentifier) : BotState
+
+    data class PermissionsDeniedState(override val context: IdChatIdentifier) : BotState
 }
