@@ -5,7 +5,6 @@ import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContextWithFSM
 import dev.inmo.tgbotapi.extensions.behaviour_builder.expectations.waitChatSharedRequestEventsMessages
 import dev.inmo.tgbotapi.extensions.utils.extensions.sameThread
 import dev.inmo.tgbotapi.types.ChatId
-import dev.inmo.tgbotapi.types.IdChatIdentifier
 import dev.inmo.tgbotapi.types.buttons.ReplyKeyboardRemove
 import dev.inmo.tgbotapi.types.message.abstracts.ChatEventMessage
 import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
@@ -13,7 +12,6 @@ import dev.inmo.tgbotapi.types.message.content.TextContent
 import dev.inmo.tgbotapi.types.request.ChatSharedRequest
 import domain.ReceiversRepository
 import domain.model.Receiver
-import handlers.admin.PermissionsChecker
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -26,9 +24,8 @@ class ReceiverActionsController @Inject constructor(
     private val behaviourContext: BehaviourContextWithFSM<BotState>,
     private val receiversRepository: ReceiversRepository,
     private val sharedReceiverHandler: SharedReceiverHandler,
-    private val permissionsChecker: PermissionsChecker,
 ) {
-    suspend fun showReceivers(message: CommonMessage<TextContent>) = withAdminCheck(message.chat.id) {
+    suspend fun showReceivers(message: CommonMessage<TextContent>) {
         val replyString = StringBuilder()
 
         val receiversList = receiversRepository.getReceiversList()
@@ -53,7 +50,7 @@ class ReceiverActionsController @Inject constructor(
         )
     }
 
-    suspend fun addReceiver(receivedMessage: CommonMessage<TextContent>) = withAdminCheck(receivedMessage.chat.id) {
+    suspend fun addReceiver(receivedMessage: CommonMessage<TextContent>) {
         with(behaviourContext) {
             reply(
                 receivedMessage,
@@ -66,14 +63,6 @@ class ReceiverActionsController @Inject constructor(
             }.first()
 
             handleSharedChat(shared)
-        }
-    }
-
-    private suspend fun <T> withAdminCheck(chatIdentifier: IdChatIdentifier, block: suspend () -> T) {
-        try {
-            permissionsChecker.checkPermissions(chatIdentifier.chatId, block)
-        } catch (e: Exception) {
-            behaviourContext.startChain(BotState.PermissionsDeniedState(chatIdentifier))
         }
     }
 

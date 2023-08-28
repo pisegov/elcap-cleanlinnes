@@ -41,7 +41,6 @@ suspend fun main() {
             userActionHandlers.setupHandlers()
             adminActionHandlers.setupHandlers()
             chatActionHandlers.setupHandlers()
-            receiverActionHandlers.setupHandlers()
         }
         setMyCommands(
             BotCommand("start", "Show start message"),

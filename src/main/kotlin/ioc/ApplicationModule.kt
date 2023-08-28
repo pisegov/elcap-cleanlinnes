@@ -1,11 +1,11 @@
 package ioc
 
 import dagger.Binds
+import dagger.Module
 import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
 import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContextWithFSM
 import dev.inmo.tgbotapi.extensions.behaviour_builder.DefaultBehaviourContextWithFSM
 import states.BotState
-import dagger.Module
 
 @Module
 interface ApplicationModule {

@@ -1,80 +1,78 @@
 package handlers.admin
 
-import dev.inmo.tgbotapi.extensions.api.send.send
 import dev.inmo.tgbotapi.extensions.behaviour_builder.DefaultBehaviourContextWithFSM
 import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onCommand
-import dev.inmo.tgbotapi.types.buttons.ReplyKeyboardRemove
+import dev.inmo.tgbotapi.types.IdChatIdentifier
 import dev.inmo.tgbotapi.types.chat.PrivateChat
 import handlers.ActionHandlers
+import handlers.receiver.ReceiverActionsController
 import states.BotState
 import states.BotState.*
-import util.removedDoubleSpaces
 import javax.inject.Inject
 
 class AdminActionHandlers @Inject constructor(
     private val behaviourContext: DefaultBehaviourContextWithFSM<BotState>,
-    private val actionsController: AdminActionsController,
+    private val addingAdminController: AdminAddController,
+    private val removingAdminController: AdminRemoveController,
+    private val shortAdminActionsController: AdminShortActionsController,
+    private val receiverActionsController: ReceiverActionsController,
+    private val permissionsChecker: PermissionsChecker,
 ) : ActionHandlers {
     override suspend fun setupHandlers() {
         with(behaviourContext) {
             onCommand("add_admin", initialFilter = { it.chat is PrivateChat }) { message ->
-                actionsController.addAdmin(message)
+                withAdminCheck(message.chat.id) {
+                    addingAdminController.addAdmin(message)
+                }
             }
 
             onCommand("show_admins", initialFilter = { it.chat is PrivateChat }) { message ->
-                actionsController.showAllAdmins(message)
-            }
-
-            onCommand("cancel", initialFilter = { it.chat is PrivateChat }) { message ->
-                StopState(message.chat.id)
+                withAdminCheck(message.chat.id) {
+                    shortAdminActionsController.showAllAdmins(message)
+                }
             }
 
             onCommand("remove_admin", initialFilter = { it.chat is PrivateChat }) { message ->
-                actionsController.showRemoveAdminKeyboard(message)
+                withAdminCheck(message.chat.id) {
+                    removingAdminController.showRemoveAdminKeyboard(message)
+                }
+            }
+
+            onCommand("show_receivers", initialFilter = { it.chat is PrivateChat }) { message ->
+                withAdminCheck(message.chat.id) {
+                    receiverActionsController.showReceivers(message)
+                }
+            }
+
+            onCommand("add_receiver", initialFilter = { it.chat is PrivateChat }) { message ->
+                withAdminCheck(message.chat.id) {
+                    receiverActionsController.addReceiver(message)
+                }
             }
 
             strictlyOn<ExpectSharedAdminToDelete> {
-                actionsController.handleSharedAdminIdToDelete(it)
+                removingAdminController.handleSharedAdminId(it)
             }
 
             strictlyOn<CorrectInputSharedAdminToDelete> {
-                send(
-                    it.context,
-                    replyMarkup = ReplyKeyboardRemove()
-                ) { +"Администратор ${it.deletedAdminFullName} удалён".removedDoubleSpaces() }
-                // Return initial state
-                null
+                removingAdminController.handleCorrectInput(it)
             }
 
             strictlyOn<WrongInputSharedAdminToDelete> {
-                send(it.context) {
-                    +"""
-                        Неверный ввод
-                        Администратор не удалён
-                        Воспользуйтесь выпадающей клавиатурой
-                        Или отмените действие командой /cancel
-                    """.trimIndent()
-                }
-                // Return expecting state
-                ExpectSharedAdminToDelete(it.context, it.sourceMessage)
-            }
-
-            strictlyOn<StopState> {
-                send(it.context, replyMarkup = ReplyKeyboardRemove()) { +"Действие отменено" }
-
-                // Return initial state
-                null
+                removingAdminController.handleWrongInput(it)
             }
 
             strictlyOn<PermissionsDeniedState> {
-                send(
-                    it.context,
-                    replyMarkup = ReplyKeyboardRemove()
-                ) { +"Oops, у вас нет прав для выполнения этой команды" }
-
-                // Return initial state
-                null
+                shortAdminActionsController.handlePermissionDeniedState(it)
             }
+        }
+    }
+
+    private suspend fun <T> withAdminCheck(chatIdentifier: IdChatIdentifier, block: suspend () -> T) {
+        try {
+            permissionsChecker.checkPermissions(chatIdentifier.chatId, block)
+        } catch (e: Exception) {
+            behaviourContext.startChain(PermissionsDeniedState(chatIdentifier))
         }
     }
 }
