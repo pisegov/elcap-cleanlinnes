@@ -32,16 +32,20 @@ class ReceiverActionsController @Inject constructor(
         val activeReceivers = receiversList.filter { it.title.isNotEmpty() }
         val notActiveReceivers = receiversList.filter { it.title.isEmpty() }
 
-        if (activeReceivers.isNotEmpty()) {
-            replyString.append("Активные получатели:\n\n")
-            activeReceivers.forEach { receiver: Receiver ->
-                replyString.append("${receiver.title}\nTelegram chat id: ${receiver.telegramChatId}\n\n")
+        if (receiversList.isEmpty()) {
+            replyString.append("Список получателей пуст")
+        } else {
+            if (activeReceivers.isNotEmpty()) {
+                replyString.append("Активные получатели:\n\n")
+                activeReceivers.forEach { receiver: Receiver ->
+                    replyString.append("${receiver.title}\nTelegram chat id: ${receiver.telegramChatId}\n\n")
+                }
             }
-        }
-        if (notActiveReceivers.isNotEmpty()) {
-            replyString.append("\nНеактивные получатели:\n\n")
-            notActiveReceivers.forEach { receiver: Receiver ->
-                replyString.append("Telegram chat id: ${receiver.telegramChatId}\n")
+            if (notActiveReceivers.isNotEmpty()) {
+                replyString.append("\nНеактивные получатели:\n\n")
+                notActiveReceivers.forEach { receiver: Receiver ->
+                    replyString.append("Telegram chat id: ${receiver.telegramChatId}\n")
+                }
             }
         }
         behaviourContext.reply(

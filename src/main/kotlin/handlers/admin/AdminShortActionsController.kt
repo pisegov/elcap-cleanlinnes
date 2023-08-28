@@ -22,16 +22,20 @@ class AdminShortActionsController @Inject constructor(
         val activeAdmins = adminsList.filter { it.fullName.isNotEmpty() }
         val notActiveAdmins = adminsList.filter { it.fullName.isEmpty() }
 
-        if (activeAdmins.isNotEmpty()) {
-            replyString.append("Активные администраторы:\n\n")
-            activeAdmins.forEach { admin: Admin ->
-                replyString.append("${admin.fullName}\nTelegram chat id: ${admin.telegramChatId}\n\n")
+        if (adminsList.isEmpty()) {
+            replyString.append("Список администраторов пуст")
+        } else {
+            if (activeAdmins.isNotEmpty()) {
+                replyString.append("Активные администраторы:\n\n")
+                activeAdmins.forEach { admin: Admin ->
+                    replyString.append("${admin.fullName}\nTelegram chat id: ${admin.telegramChatId}\n\n")
+                }
             }
-        }
-        if (notActiveAdmins.isNotEmpty()) {
-            replyString.append("\nНеактивные администраторы:\n\n")
-            notActiveAdmins.forEach { admin: Admin ->
-                replyString.append("Telegram chat id: ${admin.telegramChatId}\n")
+            if (notActiveAdmins.isNotEmpty()) {
+                replyString.append("\nНеактивные администраторы:\n\n")
+                notActiveAdmins.forEach { admin: Admin ->
+                    replyString.append("Telegram chat id: ${admin.telegramChatId}\n")
+                }
             }
         }
         behaviourContext.reply(
