@@ -29,8 +29,8 @@ class ReceiverActionsController @Inject constructor(
         val replyString = StringBuilder()
 
         val receiversList = receiversRepository.getReceiversList()
-        val activeReceivers = receiversList.filter { it.title.isNotEmpty() }
-        val notActiveReceivers = receiversList.filter { it.title.isEmpty() }
+        val activeReceivers = receiversList.filter { it.chatTitle.isNotEmpty() }
+        val notActiveReceivers = receiversList.filter { it.chatTitle.isEmpty() }
 
         if (receiversList.isEmpty()) {
             replyString.append("Список получателей пуст")
@@ -38,7 +38,7 @@ class ReceiverActionsController @Inject constructor(
             if (activeReceivers.isNotEmpty()) {
                 replyString.append("Активные получатели:\n\n")
                 activeReceivers.forEach { receiver: Receiver ->
-                    replyString.append("${receiver.title}\nTelegram chat id: ${receiver.telegramChatId}\n\n")
+                    replyString.append("${receiver.chatTitle}\nTelegram chat id: ${receiver.telegramChatId}\n\n")
                 }
             }
             if (notActiveReceivers.isNotEmpty()) {

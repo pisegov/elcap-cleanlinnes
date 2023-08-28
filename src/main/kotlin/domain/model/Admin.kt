@@ -1,6 +1,6 @@
 package domain.model
 
-interface Admin {
-    val telegramChatId: Long
+interface Admin : Chat {
+    override val telegramChatId: Long
     val fullName: String
 }

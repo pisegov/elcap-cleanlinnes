@@ -10,7 +10,7 @@ import handlers.receiver.SharedReceiverHandler
 import handlers.user.UserActionHandlers
 import states.BotState
 
-@Component(modules = [ApplicationModule::class, AdminsModule::class, ReceiversModule::class, ChatsModule::class, UsersModule::class])
+@Component(modules = [ApplicationModule::class, AdminsModule::class, ReceiversModule::class, GroupsModule::class, UsersModule::class])
 @ApplicationScope
 interface ApplicationComponent {
     @Component.Factory
@@ -22,7 +22,7 @@ interface ApplicationComponent {
 
     val adminActionHandlers: AdminActionHandlers
     val userActionHandlers: UserActionHandlers
-    val chatActionHandlers: ChatActionHandlers
+    val groupActionHandlers: ChatActionHandlers
 
     val sharedReceiverHandler: SharedReceiverHandler
 

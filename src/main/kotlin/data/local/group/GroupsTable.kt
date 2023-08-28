@@ -1,6 +1,6 @@
-package data.local.chat
+package data.local.group
 
-import domain.model.Chat
+import domain.model.Group
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.deleteWhere
@@ -8,7 +8,7 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.upsert
 
-object ChatsTable : Table("chats") {
+object GroupsTable : Table("chats") {
     private val id = integer("chat_id").autoIncrement()
     val telegramChatId = long("telegram_chat_id")
     val title = varchar("title", 100).nullable()
@@ -20,22 +20,22 @@ object ChatsTable : Table("chats") {
         uniqueIndex(telegramChatId)
     }
 
-    fun insert(chat: Chat) {
+    fun insert(group: Group) {
         return transaction {
             upsert {
-                it[title] = chat.title
-                it[telegramChatId] = chat.telegramChatId
+                it[title] = group.chatTitle
+                it[telegramChatId] = group.telegramChatId
             }
         }
     }
 
-    fun getAllChats(): List<ChatDTO> {
+    fun getAllGroups(): List<GroupDTO> {
         return transaction {
             val listModel = table.selectAll()
 
             listModel.toList().map { model ->
-                ChatDTO(
-                    id = model[ChatsTable.id],
+                GroupDTO(
+                    id = model[GroupsTable.id],
                     telegramChatId = model[telegramChatId],
                     title = model[title] ?: "",
                 )
@@ -43,10 +43,9 @@ object ChatsTable : Table("chats") {
         }
     }
 
-    fun removeChat(telegramChatId: Long) {
+    fun removeGroup(telegramChatId: Long) {
         transaction {
-            table.deleteWhere { ChatsTable.telegramChatId.eq(telegramChatId) }
+            table.deleteWhere { GroupsTable.telegramChatId.eq(telegramChatId) }
         }
     }
 }
-

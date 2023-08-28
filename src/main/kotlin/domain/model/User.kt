@@ -7,6 +7,6 @@ data class User(
 ) : Receiver, Admin {
     override val fullName: String
         get() = username?.let { "$name ($username)" } ?: name
-    override val title: String
+    override val chatTitle: String
         get() = fullName
 }

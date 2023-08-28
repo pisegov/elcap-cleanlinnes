@@ -1,6 +1,6 @@
-package data.local.chat
+package data.local.group
 
-data class ChatDTO(
+data class GroupDTO(
     val id: Int,
     val telegramChatId: Long,
     val title: String,

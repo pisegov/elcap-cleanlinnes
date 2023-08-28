@@ -1,8 +1,8 @@
 package data.local.receiver
 
-import data.local.chat.ChatsTable
+import data.local.group.GroupsTable
 import data.local.user.UsersTable
-import domain.model.Chat
+import domain.model.Group
 import domain.model.Receiver
 import domain.model.User
 import org.jetbrains.exposed.sql.*
@@ -34,7 +34,7 @@ object ReceiversTable : Table("receivers") {
         return transaction {
             val chatsList =
                 table.join(UsersTable, JoinType.LEFT, telegramChatId, UsersTable.telegramChatId)
-                    .join(ChatsTable, JoinType.LEFT, telegramChatId, ChatsTable.telegramChatId).selectAll()
+                    .join(GroupsTable, JoinType.LEFT, telegramChatId, GroupsTable.telegramChatId).selectAll()
                     .map {
                         val name = it[UsersTable.name] ?: ""
                         if (name.isNotEmpty()) {
@@ -44,9 +44,9 @@ object ReceiversTable : Table("receivers") {
                                 username = it[UsersTable.username]
                             )
                         } else {
-                            Chat(
+                            Group(
                                 telegramChatId = it[telegramChatId],
-                                title = it[ChatsTable.title] ?: ""
+                                chatTitle = it[GroupsTable.title] ?: ""
                             )
                         }
                     }
@@ -55,9 +55,9 @@ object ReceiversTable : Table("receivers") {
         }
     }
 
-    fun removeReceiver(telegramChatId: Long) {
-        transaction {
-            table.deleteWhere { ReceiversTable.telegramChatId.eq(telegramChatId) }
+    fun removeReceiver(telegramChatId: Long): Boolean {
+        return transaction {
+            table.deleteWhere { ReceiversTable.telegramChatId.eq(telegramChatId) } > 0
         }
     }
 }

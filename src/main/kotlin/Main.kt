@@ -2,7 +2,7 @@ import constants.BOT_TOKEN
 import constants.mysql_password
 import constants.mysql_user
 import data.local.admin.AdminsTable
-import data.local.chat.ChatsTable
+import data.local.group.GroupsTable
 import data.local.receiver.ReceiversTable
 import data.local.user.UsersTable
 import dev.inmo.tgbotapi.bot.ktor.telegramBot
@@ -31,7 +31,7 @@ suspend fun main() {
 
         transaction {
             SchemaUtils.create(ReceiversTable)
-            SchemaUtils.create(ChatsTable)
+            SchemaUtils.create(GroupsTable)
             SchemaUtils.create(UsersTable)
             SchemaUtils.create(AdminsTable)
         }
@@ -40,7 +40,7 @@ suspend fun main() {
         applicationComponent.apply {
             userActionHandlers.setupHandlers()
             adminActionHandlers.setupHandlers()
-            chatActionHandlers.setupHandlers()
+            groupActionHandlers.setupHandlers()
         }
         setMyCommands(
             BotCommand("start", "Show start message"),

@@ -1,7 +1,8 @@
 package domain.model
 
+interface Chat {
+    val telegramChatId: Long
+    val chatTitle: String
+}
 
-data class Chat(
-    override val telegramChatId: Long,
-    override val title: String = "",
-) : Receiver
+typealias Receiver = Chat

@@ -1,6 +1,7 @@
 package data.local.receiver
 
 import domain.model.Receiver
+import domain.states.DeletionState
 import domain.states.InsertionState
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import javax.inject.Inject
@@ -21,8 +22,12 @@ class LocalReceiversDataSource @Inject constructor() : ReceiversDataSource {
         }
     }
 
-    override suspend fun removeReceiver(telegramChatId: Long) {
-        ReceiversTable.removeReceiver(telegramChatId)
+    override suspend fun removeReceiver(telegramChatId: Long): DeletionState {
+        return if (ReceiversTable.removeReceiver(telegramChatId)) {
+            DeletionState.Success
+        } else {
+            DeletionState.Error
+        }
     }
 
     override suspend fun getReceiversList(): List<Receiver> {

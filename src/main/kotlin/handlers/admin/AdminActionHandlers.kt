@@ -6,6 +6,7 @@ import dev.inmo.tgbotapi.types.IdChatIdentifier
 import dev.inmo.tgbotapi.types.chat.PrivateChat
 import handlers.ActionHandlers
 import handlers.receiver.ReceiverActionsController
+import handlers.receiver.ReceiverRemoveController
 import states.BotState
 import states.BotState.*
 import javax.inject.Inject
@@ -16,6 +17,7 @@ class AdminActionHandlers @Inject constructor(
     private val removingAdminController: AdminRemoveController,
     private val shortAdminActionsController: AdminShortActionsController,
     private val receiverActionsController: ReceiverActionsController,
+    private val receiverRemoveController: ReceiverRemoveController,
     private val permissionsChecker: PermissionsChecker,
 ) : ActionHandlers {
     override suspend fun setupHandlers() {
@@ -49,6 +51,11 @@ class AdminActionHandlers @Inject constructor(
                     receiverActionsController.addReceiver(message)
                 }
             }
+            onCommand("remove_receiver", initialFilter = { it.chat is PrivateChat }) { message ->
+                withAdminCheck(message.chat.id) {
+                    receiverRemoveController.showRemoveReceiverKeyboard(message)
+                }
+            }
 
             strictlyOn<ExpectSharedAdminToDelete> {
                 removingAdminController.handleSharedAdminId(it)
@@ -60,6 +67,18 @@ class AdminActionHandlers @Inject constructor(
 
             strictlyOn<WrongInputSharedAdminToDelete> {
                 removingAdminController.handleWrongInput(it)
+            }
+
+            strictlyOn<ExpectSharedReceiverToDelete> {
+                receiverRemoveController.handleSharedReceiverId(it)
+            }
+
+            strictlyOn<CorrectInputSharedReceiverToDelete> {
+                receiverRemoveController.handleCorrectInput(it)
+            }
+
+            strictlyOn<WrongInputSharedReceiverToDelete> {
+                receiverRemoveController.handleWrongInput(it)
             }
 
             strictlyOn<PermissionsDeniedState> {

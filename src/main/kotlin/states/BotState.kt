@@ -22,6 +22,22 @@ sealed interface BotState : State {
         val cause: String = "",
     ) : BotState
 
+    data class ExpectSharedReceiverToDelete(
+        override val context: IdChatIdentifier,
+        val sourceMessage: CommonMessage<TextContent>,
+    ) : BotState
+
+    data class CorrectInputSharedReceiverToDelete(
+        override val context: IdChatIdentifier,
+        val deletedReceiverChatTitle: String,
+    ) : BotState
+
+    data class WrongInputSharedReceiverToDelete(
+        override val context: IdChatIdentifier,
+        val sourceMessage: CommonMessage<TextContent>,
+        val cause: String = "",
+    ) : BotState
+
     data class StopState(override val context: IdChatIdentifier) : BotState
 
     data class PermissionsDeniedState(override val context: IdChatIdentifier) : BotState

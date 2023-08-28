@@ -8,7 +8,7 @@ import javax.inject.Inject
 
 class ChatActionHandlers @Inject constructor(
     private val behaviourContext: BehaviourContext,
-    private val actionsController: ChatActionsController,
+    private val actionsController: GroupActionsController,
 ) :
     ActionHandlers {
     override suspend fun setupHandlers() {
