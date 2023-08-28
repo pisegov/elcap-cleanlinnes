@@ -19,6 +19,7 @@ sealed interface BotState : State {
     data class WrongInputSharedAdminToDelete(
         override val context: IdChatIdentifier,
         val sourceMessage: CommonMessage<TextContent>,
+        val cause: String = "",
     ) : BotState
 
     data class StopState(override val context: IdChatIdentifier) : BotState

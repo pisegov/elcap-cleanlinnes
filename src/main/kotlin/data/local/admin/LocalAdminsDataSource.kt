@@ -1,6 +1,7 @@
 package data.local.admin
 
 import domain.model.Admin
+import domain.states.DeletionState
 import domain.states.InsertionState
 import org.jetbrains.exposed.exceptions.ExposedSQLException
 import javax.inject.Inject
@@ -21,8 +22,12 @@ class LocalAdminsDataSource @Inject constructor() : AdminsDataSource {
         }
     }
 
-    override suspend fun removeAdmin(telegramChatId: Long) {
-        AdminsTable.removeAdmin(telegramChatId)
+    override suspend fun removeAdmin(telegramChatId: Long): DeletionState {
+        return if (AdminsTable.removeAdmin(telegramChatId)) {
+            DeletionState.Success
+        } else {
+            DeletionState.Error
+        }
     }
 
     override suspend fun getAllAdmins(): List<Admin> {

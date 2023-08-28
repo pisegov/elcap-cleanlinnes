@@ -9,6 +9,7 @@ import dev.inmo.tgbotapi.types.buttons.ReplyKeyboardRemove
 import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
 import dev.inmo.tgbotapi.types.message.content.TextContent
 import domain.AdminsRepository
+import domain.states.DeletionState
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import states.BotState
@@ -16,7 +17,6 @@ import util.KeyboardBuilder
 import util.ResourceProvider
 import util.removedDoubleSpaces
 import javax.inject.Inject
-
 
 class AdminRemoveController @Inject constructor(
     private val behaviourContext: BehaviourContextWithFSM<BotState>,
@@ -54,21 +54,39 @@ class AdminRemoveController @Inject constructor(
                     }
 
                     id != null -> {
-                        adminsRepository.removeAdmin(id)
-                        BotState.CorrectInputSharedAdminToDelete(
-                            state.context,
-                            deletedAdminFullName = content.text.substringBefore("[").trimEnd()
-                        )
+                        val deletionState = adminsRepository.removeAdmin(id)
+                        when (deletionState) {
+                            is DeletionState.Success -> {
+                                BotState.CorrectInputSharedAdminToDelete(
+                                    state.context,
+                                    deletedAdminFullName = content.text.substringBefore("[").trimEnd()
+                                )
+                            }
+
+                            is DeletionState.Error -> {
+                                throw WrongInputException("Нет такого id")
+                            }
+                        }
                     }
 
                     else -> {
-                        throw Exception("Message has no valid chat id")
+                        throw WrongInputException("В сообщении нет подходящего id")
                     }
                 }
-            } catch (e: Exception) {
+            } catch (e: WrongInputException) {
                 // Handle wrong input
-                BotState.WrongInputSharedAdminToDelete(state.context, sourceMessage = state.sourceMessage)
+                BotState.WrongInputSharedAdminToDelete(
+                    state.context,
+                    sourceMessage = state.sourceMessage,
+                    e.message.toString()
+                )
+            } catch (e: Exception) {
+                BotState.WrongInputSharedAdminToDelete(
+                    state.context,
+                    sourceMessage = state.sourceMessage,
+                )
             }
+
         }
     }
 
@@ -88,10 +106,13 @@ class AdminRemoveController @Inject constructor(
             send(state.context) {
                 +"""
                         Неверный ввод
-                        Администратор не удалён
+                        ${state.cause}
+                        
                         Воспользуйтесь выпадающей клавиатурой
                         Или отмените действие командой /cancel
                     """.trimIndent()
+                    // If it's a cast exception, it removes the blank string
+                    .replace("\n\n\n".toRegex(), "\n\n")
             }
             // Return expecting state
             return BotState.ExpectSharedAdminToDelete(state.context, state.sourceMessage)

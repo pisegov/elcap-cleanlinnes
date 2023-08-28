@@ -28,8 +28,9 @@ object AdminsTable : Table("admins") {
         }
     }
 
-    fun removeAdmin(telegramChatId: Long) = transaction {
-        table.deleteWhere { AdminsTable.telegramChatId.eq(telegramChatId) }
+    fun removeAdmin(telegramChatId: Long): Boolean = transaction {
+        // Returns true on successful deletion or false, if there is no such telegramChatId
+        return@transaction table.deleteWhere { AdminsTable.telegramChatId.eq(telegramChatId) } > 0
     }
 
     fun getAllAdmins(): List<Admin> = transaction {
