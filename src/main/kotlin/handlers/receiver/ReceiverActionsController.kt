@@ -11,7 +11,6 @@ import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
 import dev.inmo.tgbotapi.types.message.content.TextContent
 import dev.inmo.tgbotapi.types.request.ChatSharedRequest
 import domain.ReceiversRepository
-import domain.model.Receiver
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -25,35 +24,6 @@ class ReceiverActionsController @Inject constructor(
     private val receiversRepository: ReceiversRepository,
     private val sharedReceiverHandler: SharedReceiverHandler,
 ) {
-    suspend fun showReceivers(message: CommonMessage<TextContent>) {
-        val replyString = StringBuilder()
-
-        val receiversList = receiversRepository.getReceiversList()
-        val activeReceivers = receiversList.filter { it.chatTitle.isNotEmpty() }
-        val notActiveReceivers = receiversList.filter { it.chatTitle.isEmpty() }
-
-        if (receiversList.isEmpty()) {
-            replyString.append("Список получателей пуст")
-        } else {
-            if (activeReceivers.isNotEmpty()) {
-                replyString.append("Активные получатели:\n\n")
-                activeReceivers.forEach { receiver: Receiver ->
-                    replyString.append("${receiver.chatTitle}\nTelegram chat id: ${receiver.telegramChatId}\n\n")
-                }
-            }
-            if (notActiveReceivers.isNotEmpty()) {
-                replyString.append("\nНеактивные получатели:\n\n")
-                notActiveReceivers.forEach { receiver: Receiver ->
-                    replyString.append("Telegram chat id: ${receiver.telegramChatId}\n")
-                }
-            }
-        }
-        behaviourContext.reply(
-            message,
-            replyString.toString(),
-        )
-    }
-
     suspend fun addReceiver(receivedMessage: CommonMessage<TextContent>) {
         with(behaviourContext) {
             reply(

@@ -28,4 +28,40 @@ object ResourceProvider {
             }
         }
     }
+
+    fun chatsListIsEmpty(type: AdminManagedType): String {
+        return when (type) {
+            AdminManagedType.Admin -> {
+                "Список администраторов пуст"
+            }
+
+            AdminManagedType.Receiver -> {
+                "Список получателей пуст"
+            }
+        }
+    }
+
+    fun activeChats(type: AdminManagedType): String {
+        return when (type) {
+            AdminManagedType.Admin -> {
+                "Активные администраторы"
+            }
+
+            AdminManagedType.Receiver -> {
+                "Активные получатели"
+            }
+        }
+    }
+
+    fun notActiveChats(type: AdminManagedType): String {
+        return when (type) {
+            AdminManagedType.Admin -> {
+                "Неактивные администраторы"
+            }
+
+            AdminManagedType.Receiver -> {
+                "Неактивные получатели"
+            }
+        }
+    }
 }

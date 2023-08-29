@@ -7,6 +7,7 @@ import dev.inmo.tgbotapi.types.chat.PrivateChat
 import domain.AdminManagedType
 import handlers.ActionHandlers
 import handlers.chat.ChatRemoveController
+import handlers.chat.ChatShowController
 import handlers.receiver.ReceiverActionsController
 import states.BotState
 import states.BotState.*
@@ -15,9 +16,10 @@ import javax.inject.Inject
 class AdminActionHandlers @Inject constructor(
     private val behaviourContext: DefaultBehaviourContextWithFSM<BotState>,
     private val addingAdminController: AdminAddController,
-    private val shortAdminActionsController: AdminShortActionsController,
+    private val adminActionsController: AdminActionsController,
     private val receiverActionsController: ReceiverActionsController,
     private val adminManagedChatsRemoveController: ChatRemoveController,
+    private val adminManagedChatsShowController: ChatShowController,
     private val permissionsChecker: PermissionsChecker,
 ) : ActionHandlers {
     override suspend fun setupHandlers() {
@@ -30,7 +32,7 @@ class AdminActionHandlers @Inject constructor(
 
             onCommand("show_admins", initialFilter = { it.chat is PrivateChat }) { message ->
                 withAdminCheck(message.chat.id) {
-                    shortAdminActionsController.showAllAdmins(message)
+                    adminManagedChatsShowController.showChatsList(message, chatType = AdminManagedType.Admin)
                 }
             }
 
@@ -42,7 +44,7 @@ class AdminActionHandlers @Inject constructor(
 
             onCommand("show_receivers", initialFilter = { it.chat is PrivateChat }) { message ->
                 withAdminCheck(message.chat.id) {
-                    receiverActionsController.showReceivers(message)
+                    adminManagedChatsShowController.showChatsList(message, chatType = AdminManagedType.Receiver)
                 }
             }
 
@@ -73,7 +75,7 @@ class AdminActionHandlers @Inject constructor(
             }
 
             strictlyOn<PermissionsDeniedState> {
-                shortAdminActionsController.handlePermissionDeniedState(it)
+                adminActionsController.handlePermissionDeniedState(it)
             }
         }
     }
