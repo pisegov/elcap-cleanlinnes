@@ -4,37 +4,25 @@ import dev.inmo.micro_utils.fsm.common.State
 import dev.inmo.tgbotapi.types.IdChatIdentifier
 import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
 import dev.inmo.tgbotapi.types.message.content.TextContent
+import domain.AdminManagedType
 
 sealed interface BotState : State {
-    data class ExpectSharedAdminToDelete(
+    data class ExpectSharedChatToDelete(
         override val context: IdChatIdentifier,
         val sourceMessage: CommonMessage<TextContent>,
+        val chatType: AdminManagedType,
     ) : BotState
 
-    data class CorrectInputSharedAdminToDelete(
+    data class CorrectInputSharedChatToDelete(
         override val context: IdChatIdentifier,
-        val deletedAdminFullName: String,
+        val deletedChatTitle: String,
+        val chatType: AdminManagedType,
     ) : BotState
 
-    data class WrongInputSharedAdminToDelete(
-        override val context: IdChatIdentifier,
-        val sourceMessage: CommonMessage<TextContent>,
-        val cause: String = "",
-    ) : BotState
-
-    data class ExpectSharedReceiverToDelete(
+    data class WrongInputSharedChatToDelete(
         override val context: IdChatIdentifier,
         val sourceMessage: CommonMessage<TextContent>,
-    ) : BotState
-
-    data class CorrectInputSharedReceiverToDelete(
-        override val context: IdChatIdentifier,
-        val deletedReceiverChatTitle: String,
-    ) : BotState
-
-    data class WrongInputSharedReceiverToDelete(
-        override val context: IdChatIdentifier,
-        val sourceMessage: CommonMessage<TextContent>,
+        val chatType: AdminManagedType,
         val cause: String = "",
     ) : BotState
 

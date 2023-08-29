@@ -1,4 +1,4 @@
-package handlers.chat
+package handlers.group
 
 import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
 import dev.inmo.tgbotapi.types.chat.GroupChat

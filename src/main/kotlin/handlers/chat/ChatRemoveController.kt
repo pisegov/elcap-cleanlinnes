@@ -1,4 +1,4 @@
-package handlers.admin
+package handlers.chat
 
 import dev.inmo.tgbotapi.extensions.api.send.reply
 import dev.inmo.tgbotapi.extensions.api.send.send
@@ -8,8 +8,10 @@ import dev.inmo.tgbotapi.extensions.utils.extensions.sameThread
 import dev.inmo.tgbotapi.types.buttons.ReplyKeyboardRemove
 import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
 import dev.inmo.tgbotapi.types.message.content.TextContent
-import domain.AdminsRepository
+import domain.AdminManagedRepositoriesProvider
+import domain.AdminManagedType
 import domain.states.DeletionState
+import handlers.admin.WrongInputException
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import states.BotState
@@ -18,25 +20,27 @@ import util.ResourceProvider
 import util.removedDoubleSpaces
 import javax.inject.Inject
 
-class AdminRemoveController @Inject constructor(
+class ChatRemoveController @Inject constructor(
     private val behaviourContext: BehaviourContextWithFSM<BotState>,
-    private val adminsRepository: AdminsRepository,
+    private val chatsRepositoryProvider: AdminManagedRepositoriesProvider,
 ) {
-    suspend fun showRemoveAdminKeyboard(receivedMessage: CommonMessage<TextContent>) {
-        val adminsList = adminsRepository.getAdminsList()
+    suspend fun showRemoveChatKeyboard(receivedMessage: CommonMessage<TextContent>, chatType: AdminManagedType) {
+        val chatsRepository = chatsRepositoryProvider.provide(chatType)
+        val chatsList = chatsRepository.getChatsList()
 
         with(behaviourContext) {
             reply(
                 receivedMessage,
-                "Воспользуйтесь клавиатурой, выбрать администратора:",
-                replyMarkup = KeyboardBuilder.chatsToRemoveKeyboard(adminsList),
+                ResourceProvider.useKeyboardToSelectChat(chatType),
+                replyMarkup = KeyboardBuilder.chatsToRemoveKeyboard(chatsList),
             )
 
-            startChain(BotState.ExpectSharedAdminToDelete(receivedMessage.chat.id, receivedMessage))
+            startChain(BotState.ExpectSharedChatToDelete(receivedMessage.chat.id, receivedMessage, chatType))
         }
     }
 
-    suspend fun handleSharedAdminId(state: BotState.ExpectSharedAdminToDelete): BotState {
+    suspend fun handleSharedChatId(state: BotState.ExpectSharedChatToDelete): BotState {
+        val chatsRepository = chatsRepositoryProvider.provide(state.chatType)
         with(behaviourContext) {
             val contentMessage = waitAnyContentMessage().filter { message ->
                 message.sameThread(state.sourceMessage)
@@ -54,12 +58,13 @@ class AdminRemoveController @Inject constructor(
                     }
 
                     id != null -> {
-                        val deletionState = adminsRepository.removeAdmin(id)
+                        val deletionState = chatsRepository.removeChat(id)
                         when (deletionState) {
                             is DeletionState.Success -> {
-                                BotState.CorrectInputSharedAdminToDelete(
+                                BotState.CorrectInputSharedChatToDelete(
                                     state.context,
-                                    deletedAdminFullName = content.text.substringBefore("[").trimEnd()
+                                    deletedChatTitle = content.text.substringBefore("[").trimEnd(),
+                                    chatType = state.chatType
                                 )
                             }
 
@@ -75,33 +80,35 @@ class AdminRemoveController @Inject constructor(
                 }
             } catch (e: WrongInputException) {
                 // Handle wrong input
-                BotState.WrongInputSharedAdminToDelete(
+                BotState.WrongInputSharedChatToDelete(
                     state.context,
                     sourceMessage = state.sourceMessage,
+                    chatType = state.chatType,
                     e.message.toString()
+
                 )
             } catch (e: Exception) {
-                BotState.WrongInputSharedAdminToDelete(
+                BotState.WrongInputSharedChatToDelete(
                     state.context,
                     sourceMessage = state.sourceMessage,
+                    chatType = state.chatType,
                 )
             }
-
         }
     }
 
-    suspend fun handleCorrectInput(state: BotState.CorrectInputSharedAdminToDelete): BotState? {
+    suspend fun handleCorrectInput(state: BotState.CorrectInputSharedChatToDelete): BotState? {
         with(behaviourContext) {
             send(
                 state.context,
                 replyMarkup = ReplyKeyboardRemove()
-            ) { +"Администратор ${state.deletedAdminFullName} удалён".removedDoubleSpaces() }
+            ) { +"${ResourceProvider.chatTypeTitle(state.chatType)} ${state.deletedChatTitle} удалён".removedDoubleSpaces() }
             // Return initial state
             return null
         }
     }
 
-    suspend fun handleWrongInput(state: BotState.WrongInputSharedAdminToDelete): BotState {
+    suspend fun handleWrongInput(state: BotState.WrongInputSharedChatToDelete): BotState {
         with(behaviourContext) {
             send(state.context) {
                 +"""
@@ -115,7 +122,7 @@ class AdminRemoveController @Inject constructor(
                     .replace("\n\n\n".toRegex(), "\n\n")
             }
             // Return expecting state
-            return BotState.ExpectSharedAdminToDelete(state.context, state.sourceMessage)
+            return BotState.ExpectSharedChatToDelete(state.context, state.sourceMessage, state.chatType)
         }
     }
 

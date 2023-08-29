@@ -3,9 +3,10 @@ package ioc
 import dagger.BindsInstance
 import dagger.Component
 import dev.inmo.tgbotapi.extensions.behaviour_builder.DefaultBehaviourContextWithFSM
+import domain.AdminManagedRepositoriesProvider
 import handlers.admin.AdminActionHandlers
 import handlers.admin.PermissionsChecker
-import handlers.chat.ChatActionHandlers
+import handlers.group.GroupActionHandlers
 import handlers.receiver.SharedReceiverHandler
 import handlers.user.UserActionHandlers
 import states.BotState
@@ -22,9 +23,11 @@ interface ApplicationComponent {
 
     val adminActionHandlers: AdminActionHandlers
     val userActionHandlers: UserActionHandlers
-    val groupActionHandlers: ChatActionHandlers
+    val groupActionHandlers: GroupActionHandlers
 
     val sharedReceiverHandler: SharedReceiverHandler
 
     val permissionsChecker: PermissionsChecker
+
+    val repositoryProvider: AdminManagedRepositoriesProvider
 }

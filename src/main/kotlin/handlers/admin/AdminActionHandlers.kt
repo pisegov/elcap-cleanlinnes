@@ -4,9 +4,10 @@ import dev.inmo.tgbotapi.extensions.behaviour_builder.DefaultBehaviourContextWit
 import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onCommand
 import dev.inmo.tgbotapi.types.IdChatIdentifier
 import dev.inmo.tgbotapi.types.chat.PrivateChat
+import domain.AdminManagedType
 import handlers.ActionHandlers
+import handlers.chat.ChatRemoveController
 import handlers.receiver.ReceiverActionsController
-import handlers.receiver.ReceiverRemoveController
 import states.BotState
 import states.BotState.*
 import javax.inject.Inject
@@ -14,10 +15,9 @@ import javax.inject.Inject
 class AdminActionHandlers @Inject constructor(
     private val behaviourContext: DefaultBehaviourContextWithFSM<BotState>,
     private val addingAdminController: AdminAddController,
-    private val removingAdminController: AdminRemoveController,
     private val shortAdminActionsController: AdminShortActionsController,
     private val receiverActionsController: ReceiverActionsController,
-    private val receiverRemoveController: ReceiverRemoveController,
+    private val adminManagedChatsRemoveController: ChatRemoveController,
     private val permissionsChecker: PermissionsChecker,
 ) : ActionHandlers {
     override suspend fun setupHandlers() {
@@ -36,7 +36,7 @@ class AdminActionHandlers @Inject constructor(
 
             onCommand("remove_admin", initialFilter = { it.chat is PrivateChat }) { message ->
                 withAdminCheck(message.chat.id) {
-                    removingAdminController.showRemoveAdminKeyboard(message)
+                    adminManagedChatsRemoveController.showRemoveChatKeyboard(message, chatType = AdminManagedType.Admin)
                 }
             }
 
@@ -53,32 +53,23 @@ class AdminActionHandlers @Inject constructor(
             }
             onCommand("remove_receiver", initialFilter = { it.chat is PrivateChat }) { message ->
                 withAdminCheck(message.chat.id) {
-                    receiverRemoveController.showRemoveReceiverKeyboard(message)
+                    adminManagedChatsRemoveController.showRemoveChatKeyboard(
+                        message,
+                        chatType = AdminManagedType.Receiver
+                    )
                 }
             }
 
-            strictlyOn<ExpectSharedAdminToDelete> {
-                removingAdminController.handleSharedAdminId(it)
+            strictlyOn<ExpectSharedChatToDelete> {
+                adminManagedChatsRemoveController.handleSharedChatId(it)
             }
 
-            strictlyOn<CorrectInputSharedAdminToDelete> {
-                removingAdminController.handleCorrectInput(it)
+            strictlyOn<CorrectInputSharedChatToDelete> {
+                adminManagedChatsRemoveController.handleCorrectInput(it)
             }
 
-            strictlyOn<WrongInputSharedAdminToDelete> {
-                removingAdminController.handleWrongInput(it)
-            }
-
-            strictlyOn<ExpectSharedReceiverToDelete> {
-                receiverRemoveController.handleSharedReceiverId(it)
-            }
-
-            strictlyOn<CorrectInputSharedReceiverToDelete> {
-                receiverRemoveController.handleCorrectInput(it)
-            }
-
-            strictlyOn<WrongInputSharedReceiverToDelete> {
-                receiverRemoveController.handleWrongInput(it)
+            strictlyOn<WrongInputSharedChatToDelete> {
+                adminManagedChatsRemoveController.handleWrongInput(it)
             }
 
             strictlyOn<PermissionsDeniedState> {
