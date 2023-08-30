@@ -5,63 +5,43 @@ import domain.AdminManagedType
 object ResourceProvider {
     const val CANCEL_STRING = "Отмена ❌"
 
-    fun useKeyboardToSelectChat(type: AdminManagedType): String {
-        return when (type) {
+    private val adminResources = mapOf(
+        "cancel" to "Отмена ❌",
+        "use_keyboard_to_select_chat" to "Воспользуйтесь клавиатурой, чтобы выбрать администратора",
+        "chat_type_title" to "Администратор",
+        "chats_list_is_empty" to "Список администраторов пуст",
+        "active_chats" to "Активные администраторы",
+        "not_active_chats" to "Неактивные администраторы",
+    )
+
+    private val receiverResources = mapOf(
+        "cancel" to "Отмена ❌",
+        "use_keyboard_to_select_chat" to "Воспользуйтесь клавиатурой, чтобы выбрать получателя",
+        "chat_type_title" to "Получатель",
+        "chats_list_is_empty" to "Список получателей пуст",
+        "active_chats" to "Активные получатели",
+        "not_active_chats" to "Неактивные получатели",
+    )
+
+    private fun getStringResource(title: String, chatType: AdminManagedType): String {
+        return when (chatType) {
             AdminManagedType.Admin -> {
-                "Воспользуйтесь клавиатурой, чтобы выбрать администратора"
+                adminResources[title]
             }
 
             AdminManagedType.Receiver -> {
-                "Воспользуйтесь клавиатурой, чтобы выбрать получателя"
+                receiverResources[title]
             }
-        }
+        } ?: ""
     }
 
-    fun chatTypeTitle(type: AdminManagedType): String {
-        return when (type) {
-            AdminManagedType.Admin -> {
-                "Администратор"
-            }
+    fun useKeyboardToSelectChat(type: AdminManagedType): String = getStringResource("use_keyboard_to_select_chat", type)
 
-            AdminManagedType.Receiver -> {
-                "Получатель"
-            }
-        }
-    }
+    fun chatTypeTitle(type: AdminManagedType): String = getStringResource("chat_type_title", type)
 
-    fun chatsListIsEmpty(type: AdminManagedType): String {
-        return when (type) {
-            AdminManagedType.Admin -> {
-                "Список администраторов пуст"
-            }
+    fun chatsListIsEmpty(type: AdminManagedType): String = getStringResource("chats_list_is_empty", type)
 
-            AdminManagedType.Receiver -> {
-                "Список получателей пуст"
-            }
-        }
-    }
+    fun activeChats(type: AdminManagedType): String = getStringResource("active_chats", type)
 
-    fun activeChats(type: AdminManagedType): String {
-        return when (type) {
-            AdminManagedType.Admin -> {
-                "Активные администраторы"
-            }
-
-            AdminManagedType.Receiver -> {
-                "Активные получатели"
-            }
-        }
-    }
-
-    fun notActiveChats(type: AdminManagedType): String {
-        return when (type) {
-            AdminManagedType.Admin -> {
-                "Неактивные администраторы"
-            }
-
-            AdminManagedType.Receiver -> {
-                "Неактивные получатели"
-            }
-        }
-    }
+    fun notActiveChats(type: AdminManagedType): String = getStringResource("not_active_chats", type)
 }
