@@ -7,34 +7,27 @@ import dev.inmo.tgbotapi.types.buttons.ReplyKeyboardMarkup
 import dev.inmo.tgbotapi.types.buttons.reply.simpleReplyButton
 import dev.inmo.tgbotapi.types.request.RequestId
 import dev.inmo.tgbotapi.utils.row
+import domain.AdminManagedType
 import domain.model.Chat
 
 object KeyboardBuilder {
     private val requestIdUserAny = RequestId(2)
     private val requestIdGroup = RequestId(12)
 
-    fun shareChatKeyboard(): ReplyKeyboardMarkup {
+    fun shareChatKeyboard(requestType: AdminManagedType): ReplyKeyboardMarkup {
         return replyKeyboard(
             resizeKeyboard = true,
             oneTimeKeyboard = true,
         ) {
             row {
                 requestUserButton("Добавить пользователя ", requestIdUserAny)
-                requestGroupButton("Добавить группу", requestIdGroup)
+                if (requestType == AdminManagedType.Receiver) {
+                    requestGroupButton("Добавить группу", requestIdGroup)
+                }
             }
         }
     }
 
-    fun shareAdminKeyboard(): ReplyKeyboardMarkup {
-        return replyKeyboard(
-            resizeKeyboard = true,
-            oneTimeKeyboard = true,
-        ) {
-            row {
-                requestUserButton("Добавить пользователя ", requestIdUserAny)
-            }
-        }
-    }
 
     fun chatsToRemoveKeyboard(list: List<Chat>): ReplyKeyboardMarkup {
         return replyKeyboard(

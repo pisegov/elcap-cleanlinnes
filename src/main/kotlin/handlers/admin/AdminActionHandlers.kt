@@ -6,56 +6,55 @@ import dev.inmo.tgbotapi.types.IdChatIdentifier
 import dev.inmo.tgbotapi.types.chat.PrivateChat
 import domain.AdminManagedType
 import handlers.ActionHandlers
+import handlers.chat.ChatAddController
 import handlers.chat.ChatRemoveController
 import handlers.chat.ChatShowController
-import handlers.receiver.ReceiverActionsController
 import states.BotState
 import states.BotState.*
 import javax.inject.Inject
 
 class AdminActionHandlers @Inject constructor(
     private val behaviourContext: DefaultBehaviourContextWithFSM<BotState>,
-    private val addingAdminController: AdminAddController,
     private val adminActionsController: AdminActionsController,
-    private val receiverActionsController: ReceiverActionsController,
-    private val adminManagedChatsRemoveController: ChatRemoveController,
-    private val adminManagedChatsShowController: ChatShowController,
+    private val chatsAddController: ChatAddController,
+    private val chatsShowController: ChatShowController,
+    private val chatsRemoveController: ChatRemoveController,
     private val permissionsChecker: PermissionsChecker,
 ) : ActionHandlers {
     override suspend fun setupHandlers() {
         with(behaviourContext) {
             onCommand("add_admin", initialFilter = { it.chat is PrivateChat }) { message ->
                 withAdminCheck(message.chat.id) {
-                    addingAdminController.addAdmin(message)
+                    chatsAddController.addChat(message, chatType = AdminManagedType.Admin)
                 }
             }
 
             onCommand("show_admins", initialFilter = { it.chat is PrivateChat }) { message ->
                 withAdminCheck(message.chat.id) {
-                    adminManagedChatsShowController.showChatsList(message, chatType = AdminManagedType.Admin)
+                    chatsShowController.showChatsList(message, chatType = AdminManagedType.Admin)
                 }
             }
 
             onCommand("remove_admin", initialFilter = { it.chat is PrivateChat }) { message ->
                 withAdminCheck(message.chat.id) {
-                    adminManagedChatsRemoveController.showRemoveChatKeyboard(message, chatType = AdminManagedType.Admin)
+                    chatsRemoveController.showRemoveChatKeyboard(message, chatType = AdminManagedType.Admin)
                 }
             }
 
             onCommand("show_receivers", initialFilter = { it.chat is PrivateChat }) { message ->
                 withAdminCheck(message.chat.id) {
-                    adminManagedChatsShowController.showChatsList(message, chatType = AdminManagedType.Receiver)
+                    chatsShowController.showChatsList(message, chatType = AdminManagedType.Receiver)
                 }
             }
 
             onCommand("add_receiver", initialFilter = { it.chat is PrivateChat }) { message ->
                 withAdminCheck(message.chat.id) {
-                    receiverActionsController.addReceiver(message)
+                    chatsAddController.addChat(message, chatType = AdminManagedType.Receiver)
                 }
             }
             onCommand("remove_receiver", initialFilter = { it.chat is PrivateChat }) { message ->
                 withAdminCheck(message.chat.id) {
-                    adminManagedChatsRemoveController.showRemoveChatKeyboard(
+                    chatsRemoveController.showRemoveChatKeyboard(
                         message,
                         chatType = AdminManagedType.Receiver
                     )
@@ -63,15 +62,15 @@ class AdminActionHandlers @Inject constructor(
             }
 
             strictlyOn<ExpectSharedChatToDelete> {
-                adminManagedChatsRemoveController.handleSharedChatId(it)
+                chatsRemoveController.handleSharedChatId(it)
             }
 
             strictlyOn<CorrectInputSharedChatToDelete> {
-                adminManagedChatsRemoveController.handleCorrectInput(it)
+                chatsRemoveController.handleCorrectInput(it)
             }
 
             strictlyOn<WrongInputSharedChatToDelete> {
-                adminManagedChatsRemoveController.handleWrongInput(it)
+                chatsRemoveController.handleWrongInput(it)
             }
 
             strictlyOn<PermissionsDeniedState> {

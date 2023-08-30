@@ -7,7 +7,6 @@ import domain.AdminManagedRepositoriesProvider
 import handlers.admin.AdminActionHandlers
 import handlers.admin.PermissionsChecker
 import handlers.group.GroupActionHandlers
-import handlers.receiver.SharedReceiverHandler
 import handlers.user.UserActionHandlers
 import states.BotState
 
@@ -24,8 +23,6 @@ interface ApplicationComponent {
     val adminActionHandlers: AdminActionHandlers
     val userActionHandlers: UserActionHandlers
     val groupActionHandlers: GroupActionHandlers
-
-    val sharedReceiverHandler: SharedReceiverHandler
 
     val permissionsChecker: PermissionsChecker
 
