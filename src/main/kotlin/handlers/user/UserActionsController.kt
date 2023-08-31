@@ -41,8 +41,19 @@ class UserActionsController @Inject constructor(
     suspend fun handleStartCommand(receivedMessage: CommonMessage<TextContent>) {
         saveUser(receivedMessage)
         with(behaviourContext) {
-
-            send(receivedMessage.chat, "Start message")
+            send(
+                receivedMessage.chat, """
+                Добро пожаловать в El Cleanliness :)
+                Мы рады представить вам чат-бота для обмена информацией о загрязнениях в зале
+                
+                Сюда вы можете прислать информацию о том, где нужно прибраться, и наши сотрудники моментально об этом узнают
+                
+                Мы просим вас не присылать лишнего
+                В противном случае, мы уже делаем систему банов)
+                
+                Желаем вам хороших и чистых тренировок :)
+            """.trimIndent()
+            )
             val isAdmin = async {
                 adminsRepository.getAdminsList().map { it.telegramChatId }.contains(receivedMessage.chat.id.chatId)
             }
@@ -203,5 +214,25 @@ class UserActionsController @Inject constructor(
                 telegramUser.username?.username
             )
         )
+    }
+
+    suspend fun sendHelpMessage(receivedMessage: CommonMessage<MessageContent>) {
+        with(behaviourContext) {
+            send(
+                receivedMessage.chat.id,
+                """
+                Как пользоваться этим ботом:
+                
+                Сфотографируйте загрязнение, опишите, куда нужно подойти, и отправьте сообщение :)
+                Любая присланная вами фотография с приложенным к ней текстом пересылается сотрудникам
+                
+                Важно: постарайтесь описывать ваш запрос в одном сообщении, т.к. бот пересылает именно сообщение с фотографией
+                Если всё же не получилось или вы хотите обратиться только текстом, воспользуйтесь командой /call и опишите всё в одном следующем сообщении
+                
+                Команда /help выводит это сообщение
+                
+            """.trimIndent()
+            )
+        }
     }
 }

@@ -23,10 +23,11 @@ class UserActionHandlers @Inject constructor(
 
             onCommand("start", initialFilter = { it.chat is PrivateChat }) {
                 actionsController.handleStartCommand(it)
+                actionsController.sendHelpMessage(it)
             }
 
             onCommand("help") {
-                send(it.chat, "Help message")
+                actionsController.sendHelpMessage(it)
             }
 
             onCommand("call") { message ->
