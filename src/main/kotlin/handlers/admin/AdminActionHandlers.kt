@@ -23,6 +23,12 @@ class AdminActionHandlers @Inject constructor(
 ) : ActionHandlers {
     override suspend fun setupHandlers() {
         with(behaviourContext) {
+            onCommand("admin", initialFilter = { it.chat is PrivateChat }) { message ->
+                withAdminCheck(message.chat.id) {
+                    adminActionsController.sendAdminHelpMessage(message)
+                }
+            }
+
             onCommand("add_admin", initialFilter = { it.chat is PrivateChat }) { message ->
                 withAdminCheck(message.chat.id) {
                     chatsAddController.addChat(message, chatType = AdminManagedType.Admin)

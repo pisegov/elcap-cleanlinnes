@@ -46,14 +46,6 @@ suspend fun main() {
             BotCommand("start", "Show start message"),
             BotCommand("help", "Show help message"),
             BotCommand("call", "Обратиться к сотруднику"),
-
-            BotCommand("add_receiver", "Добавить получателя (пользователя или чат)"),
-            BotCommand("remove_receiver", "Удалить получателя"),
-            BotCommand("show_receivers", "Показать получателей"),
-
-            BotCommand("add_admin", "Добавить админа"),
-            BotCommand("show_admins", "Показать админов"),
-            BotCommand("remove_admin", "Удалить админа"),
         )
     }.join()
 }
