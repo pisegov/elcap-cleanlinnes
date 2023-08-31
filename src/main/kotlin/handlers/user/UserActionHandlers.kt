@@ -18,7 +18,7 @@ class UserActionHandlers @Inject constructor(
     override suspend fun setupHandlers() {
         behaviourContext.apply {
             onPhoto { message ->
-                actionsController.handleCallWithPhoto(message)
+                actionsController.forwardCallToReceivers(message)
             }
 
             onCommand("start", initialFilter = { it.chat is PrivateChat }) {
@@ -31,10 +31,6 @@ class UserActionHandlers @Inject constructor(
 //        onText {
 //            send(it.chat, "Сорри, я не пересылаю обычный текст, введите команду /call")
 //        }
-
-            onCommand("cancel", initialFilter = { it.chat is PrivateChat }) { message ->
-                BotState.StopState(message.chat.id)
-            }
 
             strictlyOn<BotState.StopState> {
                 send(it.context, replyMarkup = ReplyKeyboardRemove()) { +"Действие отменено" }
