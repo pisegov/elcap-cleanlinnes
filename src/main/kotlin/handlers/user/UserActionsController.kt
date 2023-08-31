@@ -25,7 +25,10 @@ class UserActionsController @Inject constructor(
     suspend fun handleCallWithPhoto(receivedMessage: CommonMessage<PhotoContent>) {
         println(receivedMessage.messageId)
 
-        val receivers = receiversRepository.getReceiversList()
+        val receivers = receiversRepository.getReceiversList().filter {
+            // If someone send a message and is a receiver, they don't need to receive this message
+            it.telegramChatId != receivedMessage.chat.id.chatId
+        }
         receivers.forEach { chat ->
             behaviourContext.withTypingAction(receivedMessage.chat) {
                 if (receivedMessage.forwardable) {
