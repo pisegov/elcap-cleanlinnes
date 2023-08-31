@@ -26,6 +26,11 @@ sealed interface BotState : State {
         val cause: String = "",
     ) : BotState
 
+    data class ExpectTextCall(
+        override val context: IdChatIdentifier,
+        val sourceMessage: CommonMessage<TextContent>,
+    ) : BotState
+
     data class StopState(override val context: IdChatIdentifier) : BotState
 
     data class PermissionsDeniedState(override val context: IdChatIdentifier) : BotState

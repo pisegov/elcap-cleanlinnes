@@ -6,7 +6,11 @@ import dev.inmo.tgbotapi.extensions.api.forwardMessage
 import dev.inmo.tgbotapi.extensions.api.send.send
 import dev.inmo.tgbotapi.extensions.api.send.withTypingAction
 import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
+import dev.inmo.tgbotapi.extensions.behaviour_builder.expectations.waitAnyContentMessage
+import dev.inmo.tgbotapi.extensions.utils.extensions.parseCommandsWithParams
+import dev.inmo.tgbotapi.extensions.utils.extensions.sameThread
 import dev.inmo.tgbotapi.types.ChatId
+import dev.inmo.tgbotapi.types.IdChatIdentifier
 import dev.inmo.tgbotapi.types.chat.ExtendedPrivateChat
 import dev.inmo.tgbotapi.types.chat.PrivateChat
 import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
@@ -20,6 +24,9 @@ import domain.model.Chat
 import domain.model.User
 import korlibs.time.DateTime
 import korlibs.time.TimezoneOffset
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
+import states.BotState
 import javax.inject.Inject
 
 class UserActionsController @Inject constructor(
@@ -34,19 +41,42 @@ class UserActionsController @Inject constructor(
     }
 
     suspend fun forwardCallToReceivers(receivedMessage: CommonMessage<MessageContent>) {
-        println(receivedMessage.messageId)
+        val chatIdentifier = receivedMessage.chat.id
 
-        val receivers = receiversRepository.getReceiversList().filter {
+        val receivers = receiversRepository.getReceiversList()
             // If someone send a message and is a receiver, they don't need to receive this message
-            it.telegramChatId != receivedMessage.chat.id.chatId
-        }
+            .filter {
+                it.telegramChatId != chatIdentifier.chatId
+            }
         val forwardedSuccessfully = forwardMessageToEveryPerson(receivedMessage, receivers)
 
         if (forwardedSuccessfully) {
-            sendMessageOnSuccessfulForward(receivedMessage)
+            sendMessageOnSuccessfulForward(chatIdentifier)
         } else {
             reportForwardingError(receivedMessage)
-            sendMessageOnUnsuccessfulForward(receivedMessage)
+            sendMessageOnUnsuccessfulForward(chatIdentifier)
+        }
+    }
+
+    suspend fun handleTextCall(state: BotState.ExpectTextCall): BotState? {
+        with(behaviourContext) {
+            val contentMessage = waitAnyContentMessage().filter { message ->
+                message.sameThread(state.sourceMessage)
+            }.first()
+            val content = contentMessage.content
+
+            return when {
+                content is TextContent && content.parseCommandsWithParams().containsKey("cancel") -> {
+                    BotState.StopState(state.context)
+                }
+
+                else -> {
+                    forwardCallToReceivers(contentMessage)
+
+                    // Close states chain and return initial state
+                    null
+                }
+            }
         }
     }
 
@@ -89,10 +119,10 @@ class UserActionsController @Inject constructor(
         return forwardedSuccessfully
     }
 
-    private suspend fun sendMessageOnSuccessfulForward(receivedMessage: CommonMessage<MessageContent>) {
+    private suspend fun sendMessageOnSuccessfulForward(chatId: IdChatIdentifier) {
         with(behaviourContext) {
             send(
-                receivedMessage.chat,
+                chatId,
                 """
                 Ваш запрос успешно передан нашим сотрудникам!
                 Спасибо, что обращаете внимание на чистоту в зале! :)
@@ -101,10 +131,10 @@ class UserActionsController @Inject constructor(
         }
     }
 
-    private suspend fun sendMessageOnUnsuccessfulForward(receivedMessage: CommonMessage<MessageContent>) {
+    private suspend fun sendMessageOnUnsuccessfulForward(chatId: IdChatIdentifier) {
         with(behaviourContext) {
             send(
-                receivedMessage.chat,
+                chatId,
                 """
                 К сожалению, ваш запрос не был передан нашим сотрудникам :(
                 Администраторы уведомлены об ошибке и вскоре мы исправим её

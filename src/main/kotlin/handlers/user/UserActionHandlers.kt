@@ -28,10 +28,25 @@ class UserActionHandlers @Inject constructor(
             onCommand("help") {
                 send(it.chat, "Help message")
             }
+
+            onCommand("call") { message ->
+                send(
+                    message.chat, """
+                    Следующее сообщение мы перешлём нашим сотрудникам
+                    Введите обращение целиком
+                    
+                    Если хотите отменить это действие, введите команду /cancel
+                """.trimIndent()
+                )
+                startChain(BotState.ExpectTextCall(message.chat.id, message))
+            }
 //        onText {
 //            send(it.chat, "Сорри, я не пересылаю обычный текст, введите команду /call")
 //        }
 
+            strictlyOn<BotState.ExpectTextCall> {
+                actionsController.handleTextCall(it)
+            }
             strictlyOn<BotState.StopState> {
                 send(it.context, replyMarkup = ReplyKeyboardRemove()) { +"Действие отменено" }
 
