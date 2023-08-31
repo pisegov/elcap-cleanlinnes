@@ -20,4 +20,15 @@ class AdminActionsController @Inject constructor(
             return null
         }
     }
+
+//    suspend fun sendAdminHelpMessage() {
+//        with(behaviourContext) {
+//            send(
+//                receivedMessage.chat.id,
+//                """
+//
+//               """.trimIndent()
+//            )
+//        }
+//    }
 }

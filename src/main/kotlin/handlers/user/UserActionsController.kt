@@ -17,6 +17,7 @@ import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
 import dev.inmo.tgbotapi.types.message.content.MessageContent
 import dev.inmo.tgbotapi.types.message.content.TextContent
 import dev.inmo.tgbotapi.utils.extensions.threadIdOrNull
+import domain.AdminManagedType
 import domain.AdminsRepository
 import domain.ReceiversRepository
 import domain.UsersRepository
@@ -24,9 +25,11 @@ import domain.model.Chat
 import domain.model.User
 import korlibs.time.DateTime
 import korlibs.time.TimezoneOffset
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import states.BotState
+import util.ResourceProvider
 import javax.inject.Inject
 
 class UserActionsController @Inject constructor(
@@ -37,7 +40,25 @@ class UserActionsController @Inject constructor(
 ) {
     suspend fun handleStartCommand(receivedMessage: CommonMessage<TextContent>) {
         saveUser(receivedMessage)
-        behaviourContext.send(receivedMessage.chat, "Start message")
+        with(behaviourContext) {
+
+            send(receivedMessage.chat, "Start message")
+            val isAdmin = async {
+                adminsRepository.getAdminsList().map { it.telegramChatId }.contains(receivedMessage.chat.id.chatId)
+            }
+            val isReceiver = async {
+                receiversRepository.getReceiversList().map { it.telegramChatId }
+                    .contains(receivedMessage.chat.id.chatId)
+            }
+
+            if (isAdmin.await()) {
+                send(receivedMessage.chat, ResourceProvider.welcomeMessage(AdminManagedType.Admin))
+            }
+            if (isReceiver.await()) {
+                send(receivedMessage.chat, ResourceProvider.welcomeMessage(AdminManagedType.Receiver))
+            }
+
+        }
     }
 
     suspend fun forwardCallToReceivers(receivedMessage: CommonMessage<MessageContent>) {

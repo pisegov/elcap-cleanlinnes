@@ -1,6 +1,7 @@
 package handlers.chat
 
 import dev.inmo.tgbotapi.extensions.api.send.reply
+import dev.inmo.tgbotapi.extensions.api.send.send
 import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
 import dev.inmo.tgbotapi.extensions.behaviour_builder.expectations.waitChatSharedRequestEventsMessages
 import dev.inmo.tgbotapi.extensions.utils.extensions.sameThread
@@ -50,16 +51,23 @@ class ChatAddController @Inject constructor(
         val chatIdentifier: ChatId = chatEvent.chatId as ChatId
         val chatId: Long = chatIdentifier.chatId
 
-        behaviourContext.launch {
-            val insertionState: InsertionState = chatsRepository.addChat(chatId)
-            val chatTitle: String = chatIdentifier.getChatTitle(behaviourContext)
-            val replyString: String = getReplyString(insertionState, chatEvent, chatTitle, chatType)
+        with(behaviourContext) {
+            launch {
+                val insertionState: InsertionState = chatsRepository.addChat(chatId)
+                val chatTitle: String = chatIdentifier.getChatTitle(behaviourContext)
+                val replyString: String = getReplyString(insertionState, chatEvent, chatTitle, chatType)
 
-            behaviourContext.reply(
-                eventMessage,
-                replyString,
-                replyMarkup = ReplyKeyboardRemove()
-            )
+                launch {
+                    if (insertionState is InsertionState.Success) {
+                        send(chatIdentifier, ResourceProvider.welcomeMessage(chatType))
+                    }
+                }
+                reply(
+                    eventMessage,
+                    replyString,
+                    replyMarkup = ReplyKeyboardRemove()
+                )
+            }
         }
     }
 

@@ -15,6 +15,12 @@ object ResourceProvider {
         "use_button_to_share_chat" to "Воспользуйтесь кнопкой, чтобы отправить боту пользователя",
         "user_is_ready" to "Пользователю доступны команды администратора",
         "user_is_not_ready" to "Пользователь ещё не активировал чат с ботом\nКак только он это сделает, ему будут доступны команды администратора",
+        "welcome_message" to """
+           Вас назначили администратором этого бота!
+           Чтобы ознакомиться с командами администратора, введите команду /admin
+           
+           Закрепите сообщение с командами, чтобы не потерять :)
+        """.trimIndent()
     )
 
     private val receiverResources = mapOf(
@@ -27,6 +33,10 @@ object ResourceProvider {
         "use_button_to_share_chat" to "Воспользуйтесь кнопкой, чтобы отправить боту пользователя или группу",
         "user_is_ready" to "Бот готов пересылать пользователю запросы",
         "user_is_not_ready" to "Пользователь ещё не активировал чат с ботом\nКак только он это сделает, бот сможет пересылать запросы",
+        "welcome_message" to """
+            Вас назначили получателем запросов!
+            Теперь запросы от наших посетителей будут пересылаться в этот чат
+        """.trimIndent()
     )
 
     private fun getStringResource(title: String, chatType: AdminManagedType): String {
@@ -55,4 +65,6 @@ object ResourceProvider {
     fun useButtonToShareChat(type: AdminManagedType): String = getStringResource("use_button_to_share_chat", type)
     fun userIsReady(type: AdminManagedType): String = getStringResource("user_is_ready", type)
     fun userIsNotReady(type: AdminManagedType): String = getStringResource("user_is_not_ready", type)
+
+    fun welcomeMessage(type: AdminManagedType): String = getStringResource("welcome_message", type)
 }
