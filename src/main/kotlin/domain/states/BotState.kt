@@ -31,6 +31,12 @@ sealed interface BotState : State {
         val sourceMessage: CommonMessage<TextContent>,
     ) : BotState
 
+    data class ExpectedSharedChatToAdd(
+        override val context: IdChatIdentifier,
+        val sourceMessage: CommonMessage<TextContent>,
+        val chatType: AdminManagedType,
+    ) : BotState
+
     data class StopState(override val context: IdChatIdentifier) : BotState
 
     data class PermissionsDeniedState(override val context: IdChatIdentifier) : BotState

@@ -25,6 +25,7 @@ object KeyboardBuilder {
                     requestGroupButton("Добавить группу", requestIdGroup)
                 }
             }
+            add(listOf(simpleReplyButton(ResourceProvider.CANCEL_STRING)))
         }
     }
 

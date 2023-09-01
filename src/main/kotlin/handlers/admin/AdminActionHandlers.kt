@@ -67,6 +67,9 @@ class AdminActionHandlers @Inject constructor(
                 }
             }
 
+            strictlyOn<ExpectedSharedChatToAdd> {
+                chatsAddController.handleSharedChat(it)
+            }
             strictlyOn<ExpectSharedChatToDelete> {
                 chatsRemoveController.handleSharedChatId(it)
             }
