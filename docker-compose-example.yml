@@ -1,0 +1,22 @@
+version: '3'
+services:
+  el-cleanliness-bot-db:
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: cleanliness_bot
+      MYSQL_ROOT_PASSWORD: your_mysql_root_password
+    ports:
+      - "3306:3306"
+    restart: unless-stopped
+
+  el-cleanliness-bot:
+    image: pisegov/el-cleanliness-bot:latest
+    environment:
+      MYSQL_HOST: el-cleanliness-bot-db
+      MYSQL_PASSWORD: your_mysql_user_password
+      MYSQL_PORT: 3306
+      MYSQL_USER: your_mysql_user
+      TZ: "Europe/Moscow"
+    ports:
+      - "8080:8080"
+    restart: unless-stopped

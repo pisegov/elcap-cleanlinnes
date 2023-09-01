@@ -22,8 +22,11 @@ suspend fun main() {
     bot.buildBehaviourWithFSMAndStartLongPolling {
         println(getMe())
 
+        val mysqlHost = System.getenv("MYSQL_HOST")
+        val connectionUrl = "jdbc:mysql://${mysqlHost}:3306/cleanliness_bot"
+
         Database.connect(
-            url = "jdbc:mysql://localhost:3306/cleanliness_bot?useSSL=false&allowPublicKeyRetrieval=true",
+            url = connectionUrl,
             driver = "com.mysql.cj.jdbc.Driver",
             user = mysql_user,
             password = mysql_password
