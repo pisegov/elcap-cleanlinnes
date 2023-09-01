@@ -1,5 +1,6 @@
 package handlers.chat
 
+import dev.inmo.tgbotapi.extensions.api.chat.get.getChat
 import dev.inmo.tgbotapi.extensions.api.send.reply
 import dev.inmo.tgbotapi.extensions.api.send.send
 import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContextWithFSM
@@ -9,6 +10,7 @@ import dev.inmo.tgbotapi.extensions.utils.extensions.parseCommandsWithParams
 import dev.inmo.tgbotapi.extensions.utils.extensions.sameThread
 import dev.inmo.tgbotapi.types.ChatId
 import dev.inmo.tgbotapi.types.buttons.ReplyKeyboardRemove
+import dev.inmo.tgbotapi.types.chat.PrivateChat
 import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
 import dev.inmo.tgbotapi.types.message.content.TextContent
 import dev.inmo.tgbotapi.types.request.ChatShared
@@ -101,7 +103,7 @@ class ChatAddController @Inject constructor(
                 val replyString: String = getReplyString(insertionState, chatEvent, chatTitle, state.chatType)
 
                 launch {
-                    if (insertionState is InsertionState.Success) {
+                    if (insertionState is InsertionState.Success && getChat(chatIdentifier) is PrivateChat) {
                         send(chatIdentifier, ResourceProvider.welcomeMessage(state.chatType))
                     }
                 }
