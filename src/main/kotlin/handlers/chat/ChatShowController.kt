@@ -7,7 +7,7 @@ import dev.inmo.tgbotapi.types.message.content.TextContent
 import domain.AdminManagedRepositoriesProvider
 import domain.AdminManagedType
 import domain.model.Chat
-import states.BotState
+import domain.states.BotState
 import util.ResourceProvider
 import javax.inject.Inject
 

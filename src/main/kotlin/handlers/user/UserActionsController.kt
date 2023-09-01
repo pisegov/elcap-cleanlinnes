@@ -23,12 +23,12 @@ import domain.ReceiversRepository
 import domain.UsersRepository
 import domain.model.Chat
 import domain.model.User
+import domain.states.BotState
 import korlibs.time.DateTime
 import korlibs.time.TimezoneOffset
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
-import states.BotState
 import util.ResourceProvider
 import javax.inject.Inject
 
@@ -130,7 +130,6 @@ class UserActionsController @Inject constructor(
                         forwardedSuccessfully = true
                     }.onFailure {
                         deleteUser(chat.telegramChatId)
-                        it.printStackTrace()
                     }
                 } else {
                     runCatchingSafely {
@@ -143,7 +142,6 @@ class UserActionsController @Inject constructor(
                         forwardedSuccessfully = true
                     }.onFailure {
                         deleteUser(chat.telegramChatId)
-                        it.printStackTrace()
                     }
                 }
             }

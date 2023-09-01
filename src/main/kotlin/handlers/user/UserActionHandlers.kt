@@ -7,8 +7,8 @@ import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.*
 import dev.inmo.tgbotapi.extensions.utils.userSharedOrNull
 import dev.inmo.tgbotapi.types.buttons.ReplyKeyboardRemove
 import dev.inmo.tgbotapi.types.chat.PrivateChat
+import domain.states.BotState
 import handlers.ActionHandlers
-import states.BotState
 import javax.inject.Inject
 
 class UserActionHandlers @Inject constructor(

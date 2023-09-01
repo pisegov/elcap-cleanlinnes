@@ -15,6 +15,8 @@ import dev.inmo.tgbotapi.types.request.ChatSharedRequest
 import dev.inmo.tgbotapi.types.request.UserShared
 import domain.AdminManagedRepositoriesProvider
 import domain.AdminManagedType
+import domain.states.BotState
+import domain.states.BotState.ExpectedSharedChatToAdd
 import domain.states.InsertionState
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first

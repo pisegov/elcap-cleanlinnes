@@ -1,4 +1,4 @@
-package states
+package domain.states
 
 import dev.inmo.micro_utils.fsm.common.State
 import dev.inmo.tgbotapi.types.IdChatIdentifier

@@ -37,10 +37,7 @@ object KeyboardBuilder {
             add(listOf(simpleReplyButton(ResourceProvider.CANCEL_STRING)))
             list.forEach { chat ->
                 val string = "${chat.chatTitle} [id:${chat.telegramChatId}]"
-                row { simpleReplyButton(string) }
-                add(
-                    listOf(simpleReplyButton(string))
-                )
+                add(listOf(simpleReplyButton(string)))
             }
         }
     }

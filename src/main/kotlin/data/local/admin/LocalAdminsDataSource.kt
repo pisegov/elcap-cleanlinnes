@@ -13,8 +13,6 @@ class LocalAdminsDataSource @Inject constructor() : AdminsDataSource {
             AdminsTable.insert(telegramChatId)
             InsertionState.Success
         } catch (e: ExposedSQLException) {
-            e.printStackTrace()
-            println(e.contexts)
             InsertionState.Duplicate
         } catch (e: Exception) {
             e.printStackTrace()

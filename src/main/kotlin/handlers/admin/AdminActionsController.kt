@@ -5,7 +5,7 @@ import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContextWithFSM
 import dev.inmo.tgbotapi.types.buttons.ReplyKeyboardRemove
 import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
 import dev.inmo.tgbotapi.types.message.content.MessageContent
-import states.BotState
+import domain.states.BotState
 import javax.inject.Inject
 
 class AdminActionsController @Inject constructor(

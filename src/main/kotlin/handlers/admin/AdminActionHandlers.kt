@@ -5,12 +5,12 @@ import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onComman
 import dev.inmo.tgbotapi.types.IdChatIdentifier
 import dev.inmo.tgbotapi.types.chat.PrivateChat
 import domain.AdminManagedType
+import domain.states.BotState
+import domain.states.BotState.*
 import handlers.ActionHandlers
 import handlers.chat.ChatAddController
 import handlers.chat.ChatRemoveController
 import handlers.chat.ChatShowController
-import states.BotState
-import states.BotState.*
 import javax.inject.Inject
 
 class AdminActionHandlers @Inject constructor(

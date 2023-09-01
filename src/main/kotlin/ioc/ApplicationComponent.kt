@@ -4,11 +4,11 @@ import dagger.BindsInstance
 import dagger.Component
 import dev.inmo.tgbotapi.extensions.behaviour_builder.DefaultBehaviourContextWithFSM
 import domain.AdminManagedRepositoriesProvider
+import domain.states.BotState
 import handlers.admin.AdminActionHandlers
 import handlers.admin.PermissionsChecker
 import handlers.group.GroupActionHandlers
 import handlers.user.UserActionHandlers
-import states.BotState
 
 @Component(modules = [ApplicationModule::class, AdminsModule::class, ReceiversModule::class, GroupsModule::class, UsersModule::class])
 @ApplicationScope

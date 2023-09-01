@@ -12,9 +12,6 @@ class LocalReceiversDataSource @Inject constructor() : ReceiversDataSource {
             ReceiversTable.insert(telegramChatId)
             InsertionState.Success
         } catch (e: ExposedSQLException) {
-            e.printStackTrace()
-            println(e.contexts)
-
             InsertionState.Duplicate
         } catch (e: Exception) {
             e.printStackTrace()
