@@ -4,7 +4,7 @@ import dev.inmo.tgbotapi.extensions.api.send.reply
 import dev.inmo.tgbotapi.extensions.api.send.send
 import dev.inmo.tgbotapi.extensions.behaviour_builder.DefaultBehaviourContextWithFSM
 import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.*
-import dev.inmo.tgbotapi.extensions.utils.userSharedOrNull
+import dev.inmo.tgbotapi.extensions.utils.usersSharedOrNull
 import dev.inmo.tgbotapi.types.buttons.ReplyKeyboardRemove
 import dev.inmo.tgbotapi.types.chat.PrivateChat
 import domain.states.BotState
@@ -60,7 +60,7 @@ class UserActionHandlers @Inject constructor(
             }
 
             onUserLoggedIn {
-                println("User ${it.chatEvent.userSharedOrNull()} logged in")
+                println("User ${it.chatEvent.usersSharedOrNull()} logged in")
             }
 
             onContentMessage {

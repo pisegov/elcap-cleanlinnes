@@ -5,12 +5,16 @@ import dagger.Component
 import dev.inmo.tgbotapi.extensions.behaviour_builder.DefaultBehaviourContextWithFSM
 import domain.AdminManagedRepositoriesProvider
 import domain.states.BotState
-import handlers.admin.AdminActionHandlers
+import handlers.ActionHandlers
 import handlers.admin.PermissionsChecker
-import handlers.group.GroupActionHandlers
-import handlers.user.UserActionHandlers
 
-@Component(modules = [ApplicationModule::class, AdminsModule::class, ReceiversModule::class, GroupsModule::class, UsersModule::class])
+@Component(modules = [
+    ApplicationModule::class,
+    AdminsModule::class,
+    ReceiversModule::class,
+    GroupsModule::class,
+    UsersModule::class,
+])
 @ApplicationScope
 interface ApplicationComponent {
     @Component.Factory
@@ -20,9 +24,7 @@ interface ApplicationComponent {
         ): ApplicationComponent
     }
 
-    val adminActionHandlers: AdminActionHandlers
-    val userActionHandlers: UserActionHandlers
-    val groupActionHandlers: GroupActionHandlers
+    val actionHandlers: Set<ActionHandlers>
 
     val permissionsChecker: PermissionsChecker
 

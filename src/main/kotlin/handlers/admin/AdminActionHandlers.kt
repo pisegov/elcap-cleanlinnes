@@ -90,7 +90,7 @@ class AdminActionHandlers @Inject constructor(
 
     private suspend fun <T> withAdminCheck(chatIdentifier: IdChatIdentifier, block: suspend () -> T) {
         try {
-            permissionsChecker.checkPermissions(chatIdentifier.chatId, block)
+            permissionsChecker.checkPermissions(chatIdentifier.chatId.long, block)
         } catch (e: Exception) {
             behaviourContext.startChain(PermissionsDeniedState(chatIdentifier))
         }

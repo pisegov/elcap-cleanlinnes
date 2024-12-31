@@ -21,7 +21,7 @@ class GroupActionsController @Inject constructor(
         behaviourContext.launch {
             groupsRepository.addGroup(
                 Group(
-                    telegramChatId = chat.id.chatId,
+                    telegramChatId = chat.id.chatId.long,
                     chatTitle = chat.title,
                 )
             )
@@ -32,7 +32,7 @@ class GroupActionsController @Inject constructor(
         println(receivedMessage.chatEvent)
         println(receivedMessage.chat)
         behaviourContext.launch {
-            groupsRepository.removeGroup(receivedMessage.chat.id.chatId)
+            groupsRepository.removeGroup(receivedMessage.chat.id.chatId.long)
         }
     }
 }

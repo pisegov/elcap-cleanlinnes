@@ -6,7 +6,7 @@ import dev.inmo.tgbotapi.extensions.api.send.send
 import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContextWithFSM
 import dev.inmo.tgbotapi.extensions.behaviour_builder.expectations.waitAnyContentMessage
 import dev.inmo.tgbotapi.extensions.behaviour_builder.expectations.waitChatSharedRequestEventsMessages
-import dev.inmo.tgbotapi.extensions.utils.extensions.parseCommandsWithParams
+import dev.inmo.tgbotapi.extensions.utils.extensions.parseCommandsWithArgs
 import dev.inmo.tgbotapi.extensions.utils.extensions.sameThread
 import dev.inmo.tgbotapi.types.ChatId
 import dev.inmo.tgbotapi.types.buttons.ReplyKeyboardRemove
@@ -15,7 +15,7 @@ import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
 import dev.inmo.tgbotapi.types.message.content.TextContent
 import dev.inmo.tgbotapi.types.request.ChatShared
 import dev.inmo.tgbotapi.types.request.ChatSharedRequest
-import dev.inmo.tgbotapi.types.request.UserShared
+import dev.inmo.tgbotapi.types.request.UsersShared
 import domain.AdminManagedRepositoriesProvider
 import domain.AdminManagedType
 import domain.states.BotState
@@ -60,14 +60,14 @@ class ChatAddController @Inject constructor(
                 when {
                     content is TextContent -> {
                         when {
-                            content.parseCommandsWithParams().contains("cancel") ||
+                            content.parseCommandsWithArgs().contains("cancel") ||
                                     content.text == ResourceProvider.CANCEL_STRING
                             -> {
                                 BotState.StopState(state.context)
                             }
 
-                            content.parseCommandsWithParams().contains("add_admin") ||
-                                    content.parseCommandsWithParams().contains("add_receiver")
+                            content.parseCommandsWithArgs().contains("add_admin") ||
+                                    content.parseCommandsWithArgs().contains("add_receiver")
                             -> {
                                 send(
                                     state.context,
@@ -96,7 +96,7 @@ class ChatAddController @Inject constructor(
                 }.first()
                 val chatEvent = shared.chatEvent
                 val chatIdentifier: ChatId = chatEvent.chatId as ChatId
-                val chatId: Long = chatIdentifier.chatId
+                val chatId: Long = chatIdentifier.chatId.long
 
                 val insertionState: InsertionState = chatsRepository.addChat(chatId)
                 val chatTitle: String = chatIdentifier.getChatTitle(behaviourContext)
@@ -158,7 +158,7 @@ class ChatAddController @Inject constructor(
 
     private fun chatReply(chatIsActivated: Boolean, chatEvent: ChatSharedRequest, chatType: AdminManagedType): String {
         return when (chatEvent) {
-            is UserShared -> {
+            is UsersShared -> {
                 when {
                     chatIsActivated -> {
                         ResourceProvider.userIsReady(chatType)

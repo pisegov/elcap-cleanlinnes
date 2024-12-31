@@ -1,6 +1,3 @@
-import constants.BOT_TOKEN
-import constants.mysql_password
-import constants.mysql_user
 import data.local.admin.AdminsTable
 import data.local.group.GroupsTable
 import data.local.receiver.ReceiversTable
@@ -22,15 +19,7 @@ suspend fun main() {
     bot.buildBehaviourWithFSMAndStartLongPolling {
         println(getMe())
 
-        val mysqlHost = System.getenv("MYSQL_HOST")
-        val connectionUrl = "jdbc:mysql://${mysqlHost}:3306/cleanliness_bot"
-
-        Database.connect(
-            url = connectionUrl,
-            driver = "com.mysql.cj.jdbc.Driver",
-            user = mysql_user,
-            password = mysql_password
-        )
+        Database.connect("jdbc:sqlite:data.db", driver = "org.sqlite.JDBC")
 
         transaction {
             SchemaUtils.create(ReceiversTable)
@@ -41,9 +30,7 @@ suspend fun main() {
 
         val applicationComponent = DaggerApplicationComponent.factory().create(this)
         applicationComponent.apply {
-            userActionHandlers.setupHandlers()
-            adminActionHandlers.setupHandlers()
-            groupActionHandlers.setupHandlers()
+            actionHandlers.forEach { it.setupHandlers() }
         }
         setMyCommands(
             BotCommand("start", "Show start message"),

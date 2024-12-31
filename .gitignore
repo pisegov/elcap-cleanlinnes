@@ -5,6 +5,7 @@ build/
 !**/src/test/**/build/
 **/src/main/**/Secrets.kt
 docker-compose.yml
+*.db
 
 
 ### IntelliJ IDEA ###

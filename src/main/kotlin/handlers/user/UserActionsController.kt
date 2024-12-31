@@ -7,10 +7,11 @@ import dev.inmo.tgbotapi.extensions.api.send.send
 import dev.inmo.tgbotapi.extensions.api.send.withTypingAction
 import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
 import dev.inmo.tgbotapi.extensions.behaviour_builder.expectations.waitAnyContentMessage
-import dev.inmo.tgbotapi.extensions.utils.extensions.parseCommandsWithParams
+import dev.inmo.tgbotapi.extensions.utils.extensions.parseCommandsWithArgs
 import dev.inmo.tgbotapi.extensions.utils.extensions.sameThread
 import dev.inmo.tgbotapi.types.ChatId
 import dev.inmo.tgbotapi.types.IdChatIdentifier
+import dev.inmo.tgbotapi.types.RawChatId
 import dev.inmo.tgbotapi.types.chat.ExtendedPrivateChat
 import dev.inmo.tgbotapi.types.chat.PrivateChat
 import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
@@ -55,11 +56,11 @@ class UserActionsController @Inject constructor(
             """.trimIndent()
             )
             val isAdmin = async {
-                adminsRepository.getAdminsList().map { it.telegramChatId }.contains(receivedMessage.chat.id.chatId)
+                adminsRepository.getAdminsList().map { it.telegramChatId }.contains(receivedMessage.chat.id.chatId.long)
             }
             val isReceiver = async {
                 receiversRepository.getReceiversList().map { it.telegramChatId }
-                    .contains(receivedMessage.chat.id.chatId)
+                    .contains(receivedMessage.chat.id.chatId.long)
             }
 
             if (isAdmin.await()) {
@@ -78,7 +79,7 @@ class UserActionsController @Inject constructor(
         val receivers = receiversRepository.getReceiversList()
             // If someone send a message and is a receiver, they don't need to receive this message
             .filter {
-                it.telegramChatId != chatIdentifier.chatId
+                it.telegramChatId != chatIdentifier.chatId.long
             }
         val forwardedSuccessfully = forwardMessageToEveryPerson(receivedMessage, receivers)
 
@@ -98,7 +99,7 @@ class UserActionsController @Inject constructor(
             val content = contentMessage.content
 
             return when {
-                content is TextContent && content.parseCommandsWithParams().containsKey("cancel") -> {
+                content is TextContent && content.parseCommandsWithArgs().containsKey("cancel") -> {
                     BotState.StopState(state.context)
                 }
 
@@ -122,7 +123,7 @@ class UserActionsController @Inject constructor(
                 if (receivedMessage.forwardable) {
                     runCatchingSafely {
                         forwardMessage(
-                            ChatId(chat.telegramChatId),
+                            ChatId(RawChatId(chat.telegramChatId)),
                             receivedMessage,
                             threadId = receivedMessage.threadIdOrNull
                         )
@@ -134,9 +135,8 @@ class UserActionsController @Inject constructor(
                 } else {
                     runCatchingSafely {
                         receivedMessage.content.createResend(
-                            ChatId(chat.telegramChatId),
+                            chatId = ChatId(RawChatId(chat.telegramChatId)),
                             messageThreadId = receivedMessage.threadIdOrNull,
-                            allowSendingWithoutReply = false
                         )
                     }.onSuccess {
                         forwardedSuccessfully = true
@@ -186,7 +186,7 @@ class UserActionsController @Inject constructor(
         adminsList.forEach { admin ->
             behaviourContext.withTypingAction(receivedMessage.chat) {
                 send(
-                    ChatId(admin.telegramChatId),
+                    ChatId(RawChatId(admin.telegramChatId)),
                     """
                    Не было передано сообщение от посетителя!
                    Посетитель: ${user.firstName} ${user.lastName}
@@ -207,7 +207,7 @@ class UserActionsController @Inject constructor(
         val telegramUser = behaviourContext.getChat(receivedMessage.chat) as ExtendedPrivateChat
         usersRepository.addUser(
             User(
-                telegramUser.id.chatId,
+                telegramUser.id.chatId.long,
                 "${telegramUser.firstName} ${telegramUser.lastName}".trim(),
                 telegramUser.username?.username
             )
