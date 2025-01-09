@@ -1,9 +1,8 @@
 plugins {
-    kotlin("jvm") version "2.1.0"
-    kotlin("kapt") version "2.1.0"
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.kapt)
     application
 }
-
 
 tasks.withType<Jar> {
     manifest {
@@ -30,21 +29,15 @@ repositories {
 }
 
 dependencies {
-    val tgBotApiVersion by System.getProperties()
-    val exposedVersion by System.getProperties()
+    implementation(libs.tg.bot.api)
 
-    implementation("dev.inmo:tgbotapi:$tgBotApiVersion")
+    implementation(libs.dagger)
+    kapt(libs.dagger.compiler)
 
-    implementation("com.google.dagger:dagger:2.54")
-    kapt("com.google.dagger:dagger-compiler:2.54")
+    implementation(libs.bundles.exposed)
+    implementation(libs.sqlite.jdbc)
 
-    implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
-    implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
-    implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
-    implementation("org.xerial:sqlite-jdbc:3.47.1.0")
-
-    implementation("org.slf4j:slf4j-api:2.0.16")
-    implementation("org.slf4j:slf4j-simple:2.0.16")
+    implementation(libs.bundles.slf4)
 }
 
 tasks.test {

@@ -1,0 +1,30 @@
+[versions]
+kotlin = "2.1.0"
+tg-bot-api = "23.0.0"
+exposed = "0.57.0"
+dagger = "2.54"
+sqlite-jdbc = "3.47.1.0"
+slf4j = "2.0.16"
+
+[libraries]
+tg-bot-api = { group = "dev.inmo", name = "tgbotapi", version.ref = "tg-bot-api" }
+
+exposed-core = { group = "org.jetbrains.exposed", name = "exposed-core", version.ref = "exposed" }
+exposed-dao = { group = "org.jetbrains.exposed", name = "exposed-dao", version.ref = "exposed" }
+exposed-jdbc = { group = "org.jetbrains.exposed", name = "exposed-jdbc", version.ref = "exposed" }
+
+sqlite-jdbc = { group = "org.xerial", name = "sqlite-jdbc", version.ref = "sqlite-jdbc" }
+
+dagger = { group = "com.google.dagger", name = "dagger", version.ref = "dagger" }
+dagger-compiler = { group = "com.google.dagger", name = "dagger-compiler", version.ref = "dagger" }
+
+slf4j-api = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
+slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
+
+[bundles]
+exposed = ["exposed-core", "exposed-dao", "exposed-jdbc"]
+slf4 = ["slf4j-api", "slf4j-simple"]
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
