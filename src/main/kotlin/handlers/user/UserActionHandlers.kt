@@ -45,14 +45,15 @@ class UserActionHandlers @Inject constructor(
 //            send(it.chat, "Сорри, я не пересылаю обычный текст, введите команду /call")
 //        }
 
+            strictlyOn<BotState.InitialState> { null }
+
             strictlyOn<BotState.ExpectTextCall> {
                 actionsController.handleTextCall(it)
             }
             strictlyOn<BotState.StopState> {
                 send(it.context, replyMarkup = ReplyKeyboardRemove()) { +"Действие отменено" }
 
-                // Return initial state
-                null
+                BotState.InitialState
             }
 
             onSticker {

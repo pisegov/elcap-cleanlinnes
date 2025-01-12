@@ -7,6 +7,12 @@ import dev.inmo.tgbotapi.types.message.content.TextContent
 import domain.AdminManagedType
 
 sealed interface BotState : State {
+
+    // declare explicitly instead of using null
+    data object InitialState: BotState {
+        override val context: Any get() = this
+    }
+
     data class ExpectSharedChatToDelete(
         override val context: IdChatIdentifier,
         val sourceMessage: CommonMessage<TextContent>,

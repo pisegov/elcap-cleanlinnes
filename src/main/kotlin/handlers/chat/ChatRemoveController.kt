@@ -97,14 +97,14 @@ class ChatRemoveController @Inject constructor(
         }
     }
 
-    suspend fun handleCorrectInput(state: BotState.CorrectInputSharedChatToDelete): BotState? {
+    suspend fun handleCorrectInput(state: BotState.CorrectInputSharedChatToDelete): BotState {
         with(behaviourContext) {
             send(
                 state.context,
                 replyMarkup = ReplyKeyboardRemove()
             ) { +"${ResourceProvider.chatTypeTitle(state.chatType)} ${state.deletedChatTitle} удалён".removedDoubleSpaces() }
-            // Return initial state
-            return null
+
+            return BotState.InitialState
         }
     }
 

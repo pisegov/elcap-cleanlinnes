@@ -91,7 +91,7 @@ class UserActionsController @Inject constructor(
         }
     }
 
-    suspend fun handleTextCall(state: BotState.ExpectTextCall): BotState? {
+    suspend fun handleTextCall(state: BotState.ExpectTextCall): BotState {
         with(behaviourContext) {
             val contentMessage = waitAnyContentMessage().filter { message ->
                 message.sameThread(state.sourceMessage)
@@ -106,8 +106,7 @@ class UserActionsController @Inject constructor(
                 else -> {
                     forwardCallToReceivers(contentMessage)
 
-                    // Close states chain and return initial state
-                    null
+                    BotState.InitialState
                 }
             }
         }
