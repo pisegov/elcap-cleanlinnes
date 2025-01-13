@@ -1,33 +1,46 @@
 package handlers.user
 
-import dev.inmo.tgbotapi.extensions.api.send.reply
 import dev.inmo.tgbotapi.extensions.api.send.send
 import dev.inmo.tgbotapi.extensions.behaviour_builder.DefaultBehaviourContextWithFSM
+import dev.inmo.tgbotapi.extensions.behaviour_builder.expectations.waitAnyContentMessage
 import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.*
+import dev.inmo.tgbotapi.extensions.utils.extensions.sameThread
 import dev.inmo.tgbotapi.extensions.utils.usersSharedOrNull
 import dev.inmo.tgbotapi.types.buttons.ReplyKeyboardRemove
 import dev.inmo.tgbotapi.types.chat.PrivateChat
+import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
+import dev.inmo.tgbotapi.types.message.content.MediaGroupContent
+import dev.inmo.tgbotapi.types.message.content.VisualMediaGroupPartContent
 import domain.states.BotState
 import handlers.ActionHandlers
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 class UserActionHandlers @Inject constructor(
-    private val behaviourContext: DefaultBehaviourContextWithFSM<BotState>,
-    private val actionsController: UserActionsController,
+    private val commandController: UserCommandController,
+    private val forwardController: ForwardController,
 ) : ActionHandlers {
-    override suspend fun setupHandlers() {
+
+    override suspend fun setupHandlers(behaviourContext: DefaultBehaviourContextWithFSM<BotState>) {
         behaviourContext.apply {
-            onPhoto { message ->
-                actionsController.forwardCallToReceivers(message)
+
+            onVisualContent { message: CommonMessage<VisualMediaGroupPartContent> ->
+                forwardController.handleVisualContentMessage(message)
+                println(message)
+            }
+
+            onVisualMediaGroupMessages { message: CommonMessage<MediaGroupContent<VisualMediaGroupPartContent>> ->
+                forwardController.handleVisualMediaGroupMessage(message)
             }
 
             onCommand("start", initialFilter = { it.chat is PrivateChat }) {
-                actionsController.handleStartCommand(it)
-                actionsController.sendHelpMessage(it)
+                commandController.handleStartCommand(it)
+                commandController.handleHelpCommand(it)
             }
 
             onCommand("help") {
-                actionsController.sendHelpMessage(it)
+                commandController.handleHelpCommand(it)
             }
 
             onCommand("call") { message ->
@@ -41,31 +54,24 @@ class UserActionHandlers @Inject constructor(
                 )
                 startChain(BotState.ExpectTextCall(message.chat.id, message))
             }
-//        onText {
-//            send(it.chat, "Сорри, я не пересылаю обычный текст, введите команду /call")
-//        }
 
             strictlyOn<BotState.InitialState> { null }
 
-            strictlyOn<BotState.ExpectTextCall> {
-                actionsController.handleTextCall(it)
+            strictlyOn<BotState.ExpectTextCall> { state ->
+                val contentMessage = waitAnyContentMessage().filter { message ->
+                    message.sameThread(state.sourceMessage)
+                }.first()
+                forwardController.handleTextCall(contentMessage)
             }
+
             strictlyOn<BotState.StopState> {
                 send(it.context, replyMarkup = ReplyKeyboardRemove()) { +"Действие отменено" }
 
                 BotState.InitialState
             }
 
-            onSticker {
-                reply(it, "Спасибо за стикер)")
-            }
-
             onUserLoggedIn {
                 println("User ${it.chatEvent.usersSharedOrNull()} logged in")
-            }
-
-            onContentMessage {
-                println(it.chat)
             }
 
             onEditedPhoto {

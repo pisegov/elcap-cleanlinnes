@@ -15,22 +15,22 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 suspend fun main() {
     val bot = telegramBot(BOT_TOKEN)
+    Database.connect("jdbc:sqlite:data.db", driver = "org.sqlite.JDBC")
+
+    transaction {
+        SchemaUtils.create(ReceiversTable)
+        SchemaUtils.create(GroupsTable)
+        SchemaUtils.create(UsersTable)
+        SchemaUtils.create(AdminsTable)
+    }
 
     bot.buildBehaviourWithFSMAndStartLongPolling {
         println(getMe())
 
-        Database.connect("jdbc:sqlite:data.db", driver = "org.sqlite.JDBC")
-
-        transaction {
-            SchemaUtils.create(ReceiversTable)
-            SchemaUtils.create(GroupsTable)
-            SchemaUtils.create(UsersTable)
-            SchemaUtils.create(AdminsTable)
-        }
-
         val applicationComponent = DaggerApplicationComponent.factory().create(this)
+        val behaviourContext = this
         applicationComponent.apply {
-            actionHandlers.forEach { it.setupHandlers() }
+            actionHandlers.forEach { it.setupHandlers(behaviourContext) }
         }
         setMyCommands(
             BotCommand("start", "Show start message"),

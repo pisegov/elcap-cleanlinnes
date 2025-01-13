@@ -21,7 +21,7 @@ class AdminActionHandlers @Inject constructor(
     private val chatsRemoveController: ChatRemoveController,
     private val permissionsChecker: PermissionsChecker,
 ) : ActionHandlers {
-    override suspend fun setupHandlers() {
+    override suspend fun setupHandlers(behaviourContext: DefaultBehaviourContextWithFSM<BotState>) {
         with(behaviourContext) {
             onCommand("admin", initialFilter = { it.chat is PrivateChat }) { message ->
                 withAdminCheck(message.chat.id) {
@@ -88,12 +88,11 @@ class AdminActionHandlers @Inject constructor(
         }
     }
 
-    private suspend fun <T> withAdminCheck(chatIdentifier: IdChatIdentifier, block: suspend () -> T) {
-        try {
-            permissionsChecker.checkPermissions(chatIdentifier.chatId.long, block)
-        } catch (e: Exception) {
+    private suspend inline fun <T> withAdminCheck(chatIdentifier: IdChatIdentifier, block: () -> T) {
+        if (permissionsChecker.checkPermissions(chatIdentifier.chatId.long)) {
+            block.invoke()
+        } else {
             behaviourContext.startChain(PermissionsDeniedState(chatIdentifier))
         }
     }
 }
-

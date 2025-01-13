@@ -11,7 +11,7 @@ import javax.inject.Inject
 
 class AdminsRepositoryImpl @Inject constructor(private val dataSource: AdminsDataSource) : AdminsRepository {
     override suspend fun addAdmin(telegramChatId: Long) = withContext(Dispatchers.IO) {
-        return@withContext dataSource.addAdmin(telegramChatId)
+        dataSource.addAdmin(telegramChatId)
     }
 
     override suspend fun removeAdmin(telegramChatId: Long) = withContext(Dispatchers.IO) {
@@ -19,7 +19,7 @@ class AdminsRepositoryImpl @Inject constructor(private val dataSource: AdminsDat
     }
 
     override suspend fun getAdminsList(): List<Admin> = withContext(Dispatchers.IO) {
-        return@withContext dataSource.getAllAdmins()
+        dataSource.getAllAdmins()
     }
 
     override suspend fun addChat(telegramChatId: Long): InsertionState = addAdmin(telegramChatId)
