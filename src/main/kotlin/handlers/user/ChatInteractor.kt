@@ -6,6 +6,9 @@ import domain.UsersRepository
 import domain.model.Admin
 import javax.inject.Inject
 
+/**
+ * Works with a local data source to manage chats
+ */
 class ChatInteractor @Inject constructor(
     private val chatInfoRetreiver: ChatInfoRetreiver,
     private val receiversRepository: ReceiversRepository,

@@ -1,22 +1,25 @@
 package handlers.user
 
-import dev.inmo.micro_utils.coroutines.runCatchingSafely
 import dev.inmo.tgbotapi.extensions.api.forwardMessage
+import dev.inmo.tgbotapi.extensions.api.send.media.sendVisualMediaGroup
 import dev.inmo.tgbotapi.extensions.api.send.send
-import dev.inmo.tgbotapi.extensions.api.send.withTypingAction
 import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
+import dev.inmo.tgbotapi.types.chat.PrivateChat
 import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
+import dev.inmo.tgbotapi.types.message.content.MediaGroupContent
 import dev.inmo.tgbotapi.types.message.content.MessageContent
+import dev.inmo.tgbotapi.types.message.content.VisualMediaGroupPartContent
 import dev.inmo.tgbotapi.utils.extensions.threadIdOrNull
 import domain.AdminManagedType
 import domain.model.Chat
 import util.ChatId
 import util.ResourceProvider
+import util.getContentWithUserMention
+import util.toDomainModel
 import javax.inject.Inject
 
 class UserMessageSender @Inject constructor(
     private val behaviourContext: BehaviourContext,
-    private val chatInteractor: ChatInteractor,
 ) {
     suspend fun sendWelcomeMessage(chatId: Long) {
         val message = """
@@ -33,11 +36,11 @@ class UserMessageSender @Inject constructor(
         behaviourContext.send(ChatId(chatId), message)
     }
 
-    suspend fun sendAdminWelcomeMessage(chatId:Long) {
+    suspend fun sendAdminWelcomeMessage(chatId: Long) {
         behaviourContext.send(ChatId(chatId), ResourceProvider.welcomeMessage(AdminManagedType.Admin))
     }
 
-    suspend fun sendReceiverWelcomeMessage(chatId:Long) {
+    suspend fun sendReceiverWelcomeMessage(chatId: Long) {
         behaviourContext.send(ChatId(chatId), ResourceProvider.welcomeMessage(AdminManagedType.Receiver))
     }
 
@@ -90,30 +93,33 @@ class UserMessageSender @Inject constructor(
         }
     }
 
-    suspend fun forwardMessageToEveryChat(list: List<Chat>, message: CommonMessage<MessageContent>): Boolean {
-        var forwardedSuccessfully = false
-        list.forEach { chat ->
-            behaviourContext.withTypingAction(message.chat) {
-                runCatchingSafely {
-                    if (message.forwardable) {
-                        forwardMessage(
-                            ChatId(chat.telegramChatId),
-                            message,
-                            threadId = message.threadIdOrNull
-                        )
-                    } else {
-                        message.content.createResend(
-                            chatId = ChatId(chat.telegramChatId),
-                            messageThreadId = message.threadIdOrNull,
-                        )
-                    }
-                }.onSuccess {
-                    forwardedSuccessfully = true
-                }.onFailure {
-                    chatInteractor.deleteUser(chat.telegramChatId)
-                }
+    suspend fun forwardSingleMediaContentMessage(
+        message: CommonMessage<MessageContent>,
+        chat: Chat,
+    ) {
+        with(behaviourContext) {
+            if (message.forwardable) {
+                forwardMessage(
+                    toChatId = ChatId(chat.telegramChatId),
+                    message = message,
+                    threadId = message.threadIdOrNull
+                )
+            } else {
+                message.content.createResend(
+                    chatId = ChatId(chat.telegramChatId),
+                    messageThreadId = message.threadIdOrNull,
+                )
             }
         }
-        return forwardedSuccessfully
+    }
+
+    suspend fun resendMediaGroup(
+        message: CommonMessage<MediaGroupContent<VisualMediaGroupPartContent>>,
+        chat: Chat,
+    ) {
+        val fromUser = (message.chat as PrivateChat).toDomainModel()
+        val newContent = message.getContentWithUserMention(fromUser)
+
+        behaviourContext.sendVisualMediaGroup(chatId = ChatId(chat.telegramChatId), media = newContent)
     }
 }
