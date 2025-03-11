@@ -3,6 +3,7 @@ package domain.states
 import dev.inmo.micro_utils.fsm.common.State
 import dev.inmo.tgbotapi.types.IdChatIdentifier
 import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
+import dev.inmo.tgbotapi.types.message.content.MessageContent
 import dev.inmo.tgbotapi.types.message.content.TextContent
 import domain.AdminManagedType
 
@@ -12,6 +13,11 @@ sealed interface BotState : State {
     data object InitialState: BotState {
         override val context: Any get() = this
     }
+
+    data class CommonMessageSent(
+        override val context: IdChatIdentifier,
+        val sourceMessage: CommonMessage<MessageContent>,
+    ) : BotState
 
     data class ExpectSharedChatToDelete(
         override val context: IdChatIdentifier,

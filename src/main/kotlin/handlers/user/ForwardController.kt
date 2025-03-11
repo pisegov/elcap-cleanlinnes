@@ -8,10 +8,7 @@ import dev.inmo.tgbotapi.types.message.content.*
 import domain.ReceiversRepository
 import domain.model.*
 import domain.states.BotState
-import handlers.message_types.ExplicitCallMessage
-import handlers.message_types.ForwardableMessage
-import handlers.message_types.SingleMediaContentMessage
-import handlers.message_types.VisualMediaGroupContentMessage
+import handlers.message_types.*
 import korlibs.time.DateTime
 import korlibs.time.TimezoneOffset
 import util.chatId
@@ -21,13 +18,13 @@ class ForwardController @Inject constructor(
     private val userMessageSender: UserMessageSender,
     private val chatInteractor: ChatInteractor,
     private val receiversRepository: ReceiversRepository,
-){
-    suspend fun handleVisualContentMessage(message: CommonMessage<VisualMediaGroupPartContent>) {
-        forwardCallToReceivers(SingleMediaContentMessage(message))
-    }
+) {
 
-    suspend fun handleVisualMediaGroupMessage(message: CommonMessage<MediaGroupContent<VisualMediaGroupPartContent>>) {
-        forwardCallToReceivers(VisualMediaGroupContentMessage(message))
+    suspend fun handleMessage(message: Message) {
+        when (message) {
+            is SupportedMessage -> forwardCallToReceivers(message)
+            is UnsupportedMessage -> handleForwardingError(message)
+        }
     }
 
     suspend fun handleTextCall(contentMessage: CommonMessage<MessageContent>): BotState {
@@ -40,14 +37,22 @@ class ForwardController @Inject constructor(
             }
 
             else -> {
-                forwardCallToReceivers(ExplicitCallMessage(contentMessage))
+                forwardCallToReceivers(SingleMediaContentMessage(contentMessage))
 
                 BotState.InitialState
             }
         }
     }
 
-    private suspend fun forwardCallToReceivers(receivedMessage: ForwardableMessage) {
+    suspend fun handleForwardingError(message: UnsupportedMessage, throwable: Throwable? = null) {
+
+        val chatId = message.telegramMessage.chat.id.chatId.long
+        userMessageSender.sendMessage(chatId, message.getAnswerMessageText())
+
+        reportForwardingError(message, throwable)
+    }
+
+    private suspend fun forwardCallToReceivers(receivedMessage: SupportedMessage) {
         val chatId = receivedMessage.telegramMessage.chatId
 
         val receivers = receiversRepository.getReceiversList()
@@ -68,7 +73,7 @@ class ForwardController @Inject constructor(
      * @return false if a receiver blocked the bot
      * and the bot can't forward the [message]
      */
-    private suspend fun forwardMessageToEveryChat(list: List<Chat>, message: ForwardableMessage): Boolean {
+    private suspend fun forwardMessageToEveryChat(list: List<Chat>, message: Message): Boolean {
         var forwardedSuccessfully = false
         list.forEach { chat ->
             runCatchingSafely {
@@ -83,7 +88,7 @@ class ForwardController @Inject constructor(
         return forwardedSuccessfully
     }
 
-    private suspend fun reportForwardingError(receivedMessage: ForwardableMessage) {
+    private suspend fun reportForwardingError(receivedMessage: Message, throwable: Throwable? = null) {
         val adminsList: List<Admin> = chatInteractor.getAdminList()
         val user: PrivateChat = receivedMessage.telegramMessage.chat as PrivateChat
         val date: DateTime = receivedMessage.telegramMessage.date
@@ -94,9 +99,10 @@ class ForwardController @Inject constructor(
                    Не было передано сообщение от посетителя!
                    Посетитель: ${user.firstName} ${user.lastName}
                    Время сообщения: ${dateTimeTz.format("yyyy-MM-dd HH:mm:ss")}
+                   ${throwable?.let { "Ошибка: $throwable" }.orEmpty()}
                 """.trimIndent()
 
-        userMessageSender.sendMessageToEveryChat(adminsList, messageString = message)
+        adminsList.forEach { userMessageSender.sendMessage(it.telegramChatId, message) }
         forwardMessageToEveryChat(adminsList, receivedMessage)
     }
 }

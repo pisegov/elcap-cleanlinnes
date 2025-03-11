@@ -87,10 +87,8 @@ class UserMessageSender @Inject constructor(
         }
     }
 
-    suspend fun sendMessageToEveryChat(list: List<Chat>, messageString: String) {
-        list.forEach { chat: Chat ->
-            behaviourContext.send(chatId = ChatId(chat.telegramChatId), text = messageString)
-        }
+    suspend fun sendMessage(chatId: Long, messageText: String) {
+        behaviourContext.send(chatId = ChatId(chatId), text = messageText)
     }
 
     suspend fun forwardSingleMediaContentMessage(

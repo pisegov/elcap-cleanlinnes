@@ -7,40 +7,63 @@ import handlers.user.UserMessageSender
 
 sealed interface Message {
     val telegramMessage: CommonMessage<*>
-}
 
-interface ForwardableMessage: Message {
-    suspend fun forward(chat: Chat, messageSender: UserMessageSender)
-}
-
-class SingleMediaContentMessage(
-    override val telegramMessage: CommonMessage<VisualMediaGroupPartContent>,
-): ForwardableMessage {
-    override suspend fun forward(chat: Chat, messageSender: UserMessageSender) {
+    suspend fun forward(chat: Chat, messageSender: UserMessageSender) {
         messageSender.forwardSingleMediaContentMessage(message = telegramMessage, chat = chat)
     }
 }
 
+sealed interface SupportedMessage: Message
+
+sealed interface UnsupportedMessage: Message {
+    suspend fun getAnswerMessageText(): String
+}
+
+class SingleMediaContentMessage(
+    override val telegramMessage: CommonMessage<MessageContent>,
+): SupportedMessage
+
 class VisualMediaGroupContentMessage(
     override val telegramMessage: CommonMessage<MediaGroupContent<VisualMediaGroupPartContent>>,
-): ForwardableMessage {
+): SupportedMessage {
     override suspend fun forward(chat: Chat, messageSender: UserMessageSender) {
         messageSender.resendMediaGroup(message = telegramMessage, chat = chat)
     }
 }
 
-class ExplicitCallMessage(
-    override val telegramMessage: CommonMessage<MessageContent>,
-): ForwardableMessage {
-    override suspend fun forward(chat: Chat, messageSender: UserMessageSender) {
-        messageSender.forwardSingleMediaContentMessage(message = telegramMessage, chat = chat)
+class SimpleTextMessage(
+    override val telegramMessage: CommonMessage<TextedContent>,
+): UnsupportedMessage {
+    override suspend fun getAnswerMessageText(): String {
+        return """
+            Бот пересылает сообщения только с фото или видео
+            
+            Если вы хотите обратиться только текстом, воспользуйтесь командой /call и опишите всё в одном следующем сообщении
+            
+            Используйте команду /help, чтобы узнать, как пользоваться ботом
+        """.trimIndent()
     }
 }
 
-class SimpleTextMessage(
-    override val telegramMessage: CommonMessage<TextedContent>,
-): Message
-
-class UnsupportedMessage(
+class DefaultUnsupportedMessage(
     override val telegramMessage: CommonMessage<*>,
-): Message
+): UnsupportedMessage {
+    override suspend fun getAnswerMessageText(): String {
+        return """
+            Бот пересылает сообщения только с фото или видео
+            
+            Используйте команду /help, чтобы узнать, как пользоваться ботом
+        """.trimIndent()
+    }
+}
+
+class ErrorMessage(
+    override val telegramMessage: CommonMessage<*>,
+): UnsupportedMessage {
+    override suspend fun getAnswerMessageText(): String {
+        return """
+            Что-то пошло не так :(
+            Обратитесь к администратору на ресепшн
+        """.trimIndent()
+    }
+}
