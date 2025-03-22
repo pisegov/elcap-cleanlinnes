@@ -30,6 +30,7 @@ repositories {
 
 dependencies {
     implementation(libs.tg.bot.api)
+    implementation(libs.ktor.server.netty)
 
     implementation(libs.dagger)
     kapt(libs.dagger.compiler)

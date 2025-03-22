@@ -1,6 +1,7 @@
 [versions]
 kotlin = "2.1.0"
 tg-bot-api = "23.0.0"
+ktor-server-netty = "3.1.1"
 exposed = "0.57.0"
 dagger = "2.54"
 sqlite-jdbc = "3.47.1.0"
@@ -8,6 +9,8 @@ slf4j = "2.0.16"
 
 [libraries]
 tg-bot-api = { group = "dev.inmo", name = "tgbotapi", version.ref = "tg-bot-api" }
+
+ktor-server-netty = {group = "io.ktor", name = "ktor-server-netty-jvm", version.ref = "ktor-server-netty"}
 
 exposed-core = { group = "org.jetbrains.exposed", name = "exposed-core", version.ref = "exposed" }
 exposed-dao = { group = "org.jetbrains.exposed", name = "exposed-dao", version.ref = "exposed" }
