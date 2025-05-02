@@ -34,6 +34,8 @@ dependencies {
     implementation(libs.dagger)
     kapt(libs.dagger.compiler)
 
+    implementation(libs.ktor.server.netty)
+
     implementation(libs.bundles.exposed)
     implementation(libs.sqlite.jdbc)
 

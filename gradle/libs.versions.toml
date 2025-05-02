@@ -5,6 +5,7 @@ exposed = "0.57.0"
 dagger = "2.54"
 sqlite-jdbc = "3.47.1.0"
 slf4j = "2.0.16"
+ktor = "3.1.1"
 
 [libraries]
 tg-bot-api = { group = "dev.inmo", name = "tgbotapi", version.ref = "tg-bot-api" }
@@ -14,6 +15,8 @@ exposed-dao = { group = "org.jetbrains.exposed", name = "exposed-dao", version.r
 exposed-jdbc = { group = "org.jetbrains.exposed", name = "exposed-jdbc", version.ref = "exposed" }
 
 sqlite-jdbc = { group = "org.xerial", name = "sqlite-jdbc", version.ref = "sqlite-jdbc" }
+
+ktor-server-netty = { group = "io.ktor", name = "ktor-server-netty", version.ref = "ktor" }
 
 dagger = { group = "com.google.dagger", name = "dagger", version.ref = "dagger" }
 dagger-compiler = { group = "com.google.dagger", name = "dagger-compiler", version.ref = "dagger" }

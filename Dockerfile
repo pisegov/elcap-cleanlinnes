@@ -1,7 +1,8 @@
-FROM amazoncorretto:11-alpine-jdk
+FROM amazoncorretto:17-alpine-jdk
 
 # Create an application directory
 RUN mkdir -p /app
+RUN mkdir -p /app/database
 
 # The /app directory should act as the main application directory
 WORKDIR /app
