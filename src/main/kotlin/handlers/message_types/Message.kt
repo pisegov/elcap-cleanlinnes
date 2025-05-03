@@ -1,6 +1,7 @@
 package handlers.message_types
 
 import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
+import dev.inmo.tgbotapi.types.message.abstracts.ContentMessage
 import dev.inmo.tgbotapi.types.message.content.*
 import domain.model.Chat
 import handlers.user.UserMessageSender
@@ -8,8 +9,8 @@ import handlers.user.UserMessageSender
 sealed interface Message {
     val telegramMessage: CommonMessage<*>
 
-    suspend fun forward(chat: Chat, messageSender: UserMessageSender) {
-        messageSender.forwardSingleMediaContentMessage(message = telegramMessage, chat = chat)
+    suspend fun forward(chat: Chat, messageSender: UserMessageSender): Result<Any> {
+        return messageSender.forwardSingleMediaContentMessage(message = telegramMessage, chat = chat)
     }
 }
 
@@ -26,8 +27,11 @@ class SingleMediaContentMessage(
 class VisualMediaGroupContentMessage(
     override val telegramMessage: CommonMessage<MediaGroupContent<VisualMediaGroupPartContent>>,
 ): SupportedMessage {
-    override suspend fun forward(chat: Chat, messageSender: UserMessageSender) {
-        messageSender.resendMediaGroup(message = telegramMessage, chat = chat)
+    override suspend fun forward(
+        chat: Chat,
+        messageSender: UserMessageSender,
+    ): Result<ContentMessage<MediaGroupContent<VisualMediaGroupPartContent>>> {
+        return messageSender.resendMediaGroup(message = telegramMessage, chat = chat)
     }
 }
 

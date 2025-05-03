@@ -1,6 +1,5 @@
 package handlers.user
 
-import dev.inmo.micro_utils.coroutines.runCatchingSafely
 import dev.inmo.tgbotapi.extensions.utils.extensions.parseCommandsWithArgs
 import dev.inmo.tgbotapi.types.chat.PrivateChat
 import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
@@ -76,14 +75,12 @@ class ForwardController @Inject constructor(
     private suspend fun forwardMessageToEveryChat(list: List<Chat>, message: Message): Boolean {
         var forwardedSuccessfully = false
         list.forEach { chat ->
-            runCatchingSafely {
-                message.forward(chat = chat, messageSender = userMessageSender)
-            }.onSuccess {
-                forwardedSuccessfully = true
-            }.onFailure { exception ->
-                println(exception)
-                chatInteractor.deleteUser(chat.telegramChatId)
-            }
+            message.forward(chat = chat, messageSender = userMessageSender)
+                .onSuccess {
+                    forwardedSuccessfully = true
+                }.onFailure { exception ->
+                    println(exception)
+                }
         }
         return forwardedSuccessfully
     }

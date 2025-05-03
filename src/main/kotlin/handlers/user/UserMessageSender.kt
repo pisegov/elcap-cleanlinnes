@@ -1,27 +1,22 @@
 package handlers.user
 
-import dev.inmo.tgbotapi.extensions.api.forwardMessage
-import dev.inmo.tgbotapi.extensions.api.send.media.sendVisualMediaGroup
-import dev.inmo.tgbotapi.extensions.api.send.send
-import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
+import dev.inmo.tgbotapi.extensions.utils.textContentOrNull
 import dev.inmo.tgbotapi.types.chat.PrivateChat
 import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
+import dev.inmo.tgbotapi.types.message.abstracts.ContentMessage
 import dev.inmo.tgbotapi.types.message.content.MediaGroupContent
 import dev.inmo.tgbotapi.types.message.content.MessageContent
+import dev.inmo.tgbotapi.types.message.content.TextContent
 import dev.inmo.tgbotapi.types.message.content.VisualMediaGroupPartContent
-import dev.inmo.tgbotapi.utils.extensions.threadIdOrNull
 import domain.AdminManagedType
 import domain.model.Chat
-import util.ChatId
-import util.ResourceProvider
-import util.getContentWithUserMention
-import util.toDomainModel
+import util.*
 import javax.inject.Inject
 
 class UserMessageSender @Inject constructor(
-    private val behaviourContext: BehaviourContext,
+    private val telegramMessageSender: TelegramMessageSender,
 ) {
-    suspend fun sendWelcomeMessage(chatId: Long) {
+    suspend fun sendWelcomeMessage(chatId: Long): Result<ContentMessage<TextContent>> {
         val message = """
                 Добро пожаловать в El Cleanliness :)
                 Мы рады представить вам чат-бота для обмена информацией о загрязнениях в зале
@@ -33,18 +28,24 @@ class UserMessageSender @Inject constructor(
                 
                 Желаем вам хороших и чистых тренировок :)
             """.trimIndent()
-        behaviourContext.send(ChatId(chatId), message)
+        return telegramMessageSender.sendMessage(chatId, message)
     }
 
-    suspend fun sendAdminWelcomeMessage(chatId: Long) {
-        behaviourContext.send(ChatId(chatId), ResourceProvider.welcomeMessage(AdminManagedType.Admin))
+    suspend fun sendAdminWelcomeMessage(chatId: Long): Result<ContentMessage<TextContent>> {
+        return telegramMessageSender.sendMessage(
+            chatId = chatId,
+            messageText = ResourceProvider.welcomeMessage(AdminManagedType.Admin),
+        )
     }
 
-    suspend fun sendReceiverWelcomeMessage(chatId: Long) {
-        behaviourContext.send(ChatId(chatId), ResourceProvider.welcomeMessage(AdminManagedType.Receiver))
+    suspend fun sendReceiverWelcomeMessage(chatId: Long): Result<ContentMessage<TextContent>> {
+        return telegramMessageSender.sendMessage(
+            chatId = chatId,
+            messageText = ResourceProvider.welcomeMessage(AdminManagedType.Receiver),
+        )
     }
 
-    suspend fun sendHelpMessage(chatId: Long) {
+    suspend fun sendHelpMessage(chatId: Long): Result<ContentMessage<TextContent>> {
         val message = """
                 Как пользоваться этим ботом:
                 
@@ -57,67 +58,64 @@ class UserMessageSender @Inject constructor(
                 Команда /help выводит это сообщение
                 
             """.trimIndent()
-        behaviourContext.send(chatId = ChatId(chatId), text = message)
+        return telegramMessageSender.sendMessage(chatId = chatId, messageText = message)
     }
 
-    suspend fun sendMessageOnSuccessfulForward(chatId: Long) {
-        with(behaviourContext) {
-            send(
-                ChatId(chatId),
-                """
-                Ваш запрос успешно передан нашим сотрудникам!
-                Спасибо, что обращаете внимание на чистоту в зале! :)
-                """.trimIndent()
-            )
-        }
+    suspend fun sendMessageOnSuccessfulForward(chatId: Long): Result<ContentMessage<TextContent>> {
+        return telegramMessageSender.sendMessage(
+            chatId = chatId, messageText = """
+                                Ваш запрос успешно передан нашим сотрудникам!
+                                Спасибо, что обращаете внимание на чистоту в зале! :)
+                                """.trimIndent()
+        )
     }
 
-    suspend fun sendMessageOnUnsuccessfulForward(chatId: Long) {
-        with(behaviourContext) {
-            send(
-                ChatId(chatId),
-                """
-                К сожалению, ваш запрос не был передан нашим сотрудникам :(
-                Администраторы уведомлены об ошибке и вскоре мы исправим её
-                Вы можете обратиться к нашим сотрудникам в зале или на ресепшен, чтобы передать информацию
-                
-                Спасибо, что обращаете внимание на чистоту в зале! :)
-                """.trimIndent()
-            )
-        }
+    suspend fun sendMessageOnUnsuccessfulForward(chatId: Long): Result<ContentMessage<TextContent>> {
+        return telegramMessageSender.sendMessage(
+            chatId = chatId, messageText = """
+                                К сожалению, ваш запрос не был передан нашим сотрудникам :(
+                                Администраторы уведомлены об ошибке и вскоре мы исправим её
+                                Вы можете обратиться к нашим сотрудникам в зале или на ресепшен, чтобы передать информацию
+                                
+                                Спасибо, что обращаете внимание на чистоту в зале! :)
+                                """.trimIndent()
+        )
     }
 
-    suspend fun sendMessage(chatId: Long, messageText: String) {
-        behaviourContext.send(chatId = ChatId(chatId), text = messageText)
+    suspend fun sendMessage(chatId: Long, messageText: String): Result<ContentMessage<TextContent>> {
+        return telegramMessageSender.sendMessage(chatId = chatId, messageText = messageText)
     }
 
     suspend fun forwardSingleMediaContentMessage(
         message: CommonMessage<MessageContent>,
         chat: Chat,
-    ) {
-        with(behaviourContext) {
-            if (message.forwardable) {
-                forwardMessage(
-                    toChatId = ChatId(chat.telegramChatId),
-                    message = message,
-                    threadId = message.threadIdOrNull
-                )
-            } else {
-                message.content.createResend(
-                    chatId = ChatId(chat.telegramChatId),
-                    messageThreadId = message.threadIdOrNull,
-                )
-            }
+    ): Result<Any> {
+        telegramMessageSender.forwardMessage(
+            chatId = chat.telegramChatId,
+            message = message,
+        ).onSuccess {
+            return Result.success(it)
+        }.onFailure {
+            println(it.message)
+            return telegramMessageSender.createResend(
+                chatId = chat.telegramChatId,
+                message= message,
+            )
         }
+
+        return Result.failure(IllegalStateException("Forwarding went wrong"))
     }
 
     suspend fun resendMediaGroup(
         message: CommonMessage<MediaGroupContent<VisualMediaGroupPartContent>>,
         chat: Chat,
-    ) {
+    ): Result<ContentMessage<MediaGroupContent<VisualMediaGroupPartContent>>> {
         val fromUser = (message.chat as PrivateChat).toDomainModel()
         val newContent = message.getContentWithUserMention(fromUser)
 
-        behaviourContext.sendVisualMediaGroup(chatId = ChatId(chat.telegramChatId), media = newContent)
+        return telegramMessageSender.sendVisualMediaGroup(
+            chatId = chat.telegramChatId,
+            media = newContent,
+        )
     }
 }
