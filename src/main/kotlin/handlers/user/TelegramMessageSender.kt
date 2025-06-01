@@ -39,18 +39,6 @@ class TelegramMessageSender @Inject constructor(
         }
     }
 
-    suspend fun createResend(
-        chatId: Long,
-        message: ContentMessage<MessageContent>,
-    ): Result<Request<out AccessibleMessage>> {
-        return runSuspendCatching {
-            message.content.createResend(
-                chatId = ChatId(chatId),
-                messageThreadId = message.threadIdOrNull,
-            )
-        }
-    }
-
     suspend fun sendVisualMediaGroup(
         chatId: Long,
         media: List<VisualMediaGroupPartContent>,

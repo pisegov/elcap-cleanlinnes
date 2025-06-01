@@ -5,11 +5,12 @@ import dev.inmo.tgbotapi.types.message.abstracts.ContentMessage
 import dev.inmo.tgbotapi.types.message.content.*
 import domain.model.Chat
 import handlers.user.UserMessageSender
+import kotlinx.coroutines.flow.Flow
 
 sealed interface Message {
     val telegramMessage: CommonMessage<*>
 
-    suspend fun forward(chat: Chat, messageSender: UserMessageSender): Result<Any> {
+    suspend fun forward(chat: Chat, messageSender: UserMessageSender): Flow<Result<Any>> {
         return messageSender.forwardSingleMediaContentMessage(message = telegramMessage, chat = chat)
     }
 }
@@ -30,7 +31,7 @@ class VisualMediaGroupContentMessage(
     override suspend fun forward(
         chat: Chat,
         messageSender: UserMessageSender,
-    ): Result<ContentMessage<MediaGroupContent<VisualMediaGroupPartContent>>> {
+    ): Flow<Result<ContentMessage<MediaGroupContent<VisualMediaGroupPartContent>>>> {
         return messageSender.resendMediaGroup(message = telegramMessage, chat = chat)
     }
 }

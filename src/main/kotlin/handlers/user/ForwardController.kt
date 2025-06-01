@@ -1,5 +1,8 @@
 package handlers.user
 
+import dev.inmo.kslog.common.LogLevel
+import dev.inmo.kslog.common.log
+import dev.inmo.kslog.common.logger
 import dev.inmo.tgbotapi.extensions.utils.extensions.parseCommandsWithArgs
 import dev.inmo.tgbotapi.types.chat.PrivateChat
 import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
@@ -76,10 +79,12 @@ class ForwardController @Inject constructor(
         var forwardedSuccessfully = false
         list.forEach { chat ->
             message.forward(chat = chat, messageSender = userMessageSender)
-                .onSuccess {
-                    forwardedSuccessfully = true
-                }.onFailure { exception ->
-                    println(exception)
+                .collect { result ->
+                    result.onSuccess {
+                        forwardedSuccessfully = true
+                    }.onFailure { exception ->
+                        logger.log(LogLevel.WARNING, exception)
+                    }
                 }
         }
         return forwardedSuccessfully

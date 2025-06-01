@@ -10,7 +10,11 @@ import dev.inmo.tgbotapi.types.message.content.TextContent
 import dev.inmo.tgbotapi.types.message.content.VisualMediaGroupPartContent
 import domain.AdminManagedType
 import domain.model.Chat
-import util.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import util.ResourceProvider
+import util.getContentWithUserMention
+import util.toDomainModel
 import javax.inject.Inject
 
 class UserMessageSender @Inject constructor(
@@ -86,36 +90,47 @@ class UserMessageSender @Inject constructor(
         return telegramMessageSender.sendMessage(chatId = chatId, messageText = messageText)
     }
 
-    suspend fun forwardSingleMediaContentMessage(
+    fun forwardSingleMediaContentMessage(
         message: CommonMessage<MessageContent>,
         chat: Chat,
-    ): Result<Any> {
-        telegramMessageSender.forwardMessage(
-            chatId = chat.telegramChatId,
-            message = message,
-        ).onSuccess {
-            return Result.success(it)
-        }.onFailure {
-            println(it.message)
-            return telegramMessageSender.createResend(
+    ): Flow<Result<Any>> {
+        return flow {
+            telegramMessageSender.forwardMessage(
                 chatId = chat.telegramChatId,
-                message= message,
-            )
-        }
+                message = message,
+            ).onSuccess {
+                emit(Result.success(it))
+                return@flow
+            }.onFailure {
+                emit(Result.failure(it))
+            }
 
-        return Result.failure(IllegalStateException("Forwarding went wrong"))
+            telegramMessageSender.sendMessage(
+                chatId = chat.telegramChatId,
+                messageText = message.content.textContentOrNull()?.text.orEmpty(),
+            ).onSuccess {
+                emit(Result.success(it))
+                return@flow
+            }.onFailure {
+                emit(Result.failure(it))
+            }
+        }
     }
 
-    suspend fun resendMediaGroup(
+    fun resendMediaGroup(
         message: CommonMessage<MediaGroupContent<VisualMediaGroupPartContent>>,
         chat: Chat,
-    ): Result<ContentMessage<MediaGroupContent<VisualMediaGroupPartContent>>> {
+    ): Flow<Result<ContentMessage<MediaGroupContent<VisualMediaGroupPartContent>>>> {
         val fromUser = (message.chat as PrivateChat).toDomainModel()
         val newContent = message.getContentWithUserMention(fromUser)
 
-        return telegramMessageSender.sendVisualMediaGroup(
-            chatId = chat.telegramChatId,
-            media = newContent,
-        )
+        return flow {
+            emit(
+                telegramMessageSender.sendVisualMediaGroup(
+                    chatId = chat.telegramChatId,
+                    media = newContent,
+                )
+            )
+        }
     }
 }
