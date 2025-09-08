@@ -4,14 +4,13 @@ import dev.inmo.tgbotapi.extensions.api.forwardMessage
 import dev.inmo.tgbotapi.extensions.api.send.media.sendVisualMediaGroup
 import dev.inmo.tgbotapi.extensions.api.send.send
 import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
-import dev.inmo.tgbotapi.requests.abstracts.Request
-import dev.inmo.tgbotapi.types.message.abstracts.AccessibleMessage
 import dev.inmo.tgbotapi.types.message.abstracts.ContentMessage
 import dev.inmo.tgbotapi.types.message.abstracts.PossiblyForwardedMessage
 import dev.inmo.tgbotapi.types.message.content.MediaGroupContent
 import dev.inmo.tgbotapi.types.message.content.MessageContent
 import dev.inmo.tgbotapi.types.message.content.TextContent
 import dev.inmo.tgbotapi.types.message.content.VisualMediaGroupPartContent
+import dev.inmo.tgbotapi.types.message.textsources.TextSourcesList
 import dev.inmo.tgbotapi.utils.extensions.threadIdOrNull
 import util.ChatId
 import util.runSuspendCatching
@@ -23,6 +22,12 @@ class TelegramMessageSender @Inject constructor(
     suspend fun sendMessage(chatId: Long, messageText: String): Result<ContentMessage<TextContent>> {
         return runSuspendCatching {
             behaviourContext.send(chatId = ChatId(chatId), text = messageText)
+        }
+    }
+
+    suspend fun sendMessage(chatId: Long, textSources: TextSourcesList): Result<ContentMessage<TextContent>> {
+        return runSuspendCatching {
+            behaviourContext.send(chatId = ChatId(chatId), entities = textSources)
         }
     }
 
