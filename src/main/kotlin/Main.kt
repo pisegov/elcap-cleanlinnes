@@ -18,8 +18,12 @@ private object EnvVars {
 }
 
 suspend fun main() {
-    val botToken = System.getenv(EnvVars.CLEANCAP_BOT_TOKEN) ?: return
-    val databasePath = System.getenv(EnvVars.CLEANCAP_DATABASE_RELATIVE_PATH) ?: return
+    val botToken = requireNotNull(System.getenv(EnvVars.CLEANCAP_BOT_TOKEN)) {
+        "There is no bot token in CLEANCAP_BOT_TOKEN env variable"
+    }
+    val databasePath = requireNotNull(System.getenv(EnvVars.CLEANCAP_DATABASE_RELATIVE_PATH)) {
+        "There is no database relative path in CLEANCAP_DATABASE_RELATIVE_PATH env variable"
+    }
 
     val bot = telegramBot(botToken)
     Database.connect("jdbc:sqlite:$databasePath", driver = "org.sqlite.JDBC")
